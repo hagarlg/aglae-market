@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ECUBED — Algae</title>
+<style>
+  :root{
+    --bg:#0e1111; --card:#151a1a; --muted:#8aa29e; --text:#eef3f2; --brand:#39d98a; --brand-2:#2bb673; --danger:#ff5c6c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:linear-gradient(180deg,#0c0f0f,#0f1313);}
+  header{position:sticky;top:0;background:rgba(21,26,26,.9);backdrop-filter:blur(8px);z-index:10;border-bottom:1px solid #1d2323}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .nav{display:flex;align-items:center;gap:16px;justify-content:space-between;color:var(--text)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700}
+  .logo i{width:28px;height:28px;border-radius:8px;background:radial-gradient(120% 120% at 20% 20%,#55ffa8,transparent 60%),radial-gradient(120% 120% at 80% 80%,#2bb673,transparent 60%),#1a221f;box-shadow:0 0 24px rgba(57,217,138,.35) inset}
+  .tag{font-size:12px;color:var(--muted)}
+  .btn{cursor:pointer;border:none;border-radius:12px;padding:10px 14px;background:var(--brand);color:#052d1b;font-weight:700}
+  .btn:hover{background:var(--brand-2)}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid #2a3434}
+  .btn.danger{background:var(--danger);color:#2a0a0e}
+  main .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .card{background:var(--card);color:var(--text);border:1px solid #1d2323;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .card img{width:100%;height:160px;object-fit:cover;background:#0b0f0f}
+  .card .pad{padding:14px;display:flex;flex-direction:column;gap:8px}
+  .muted{color:var(--muted);font-size:14px}
+  .drawer{position:fixed;right:0;top:0;height:100%;width:420px;max-width:95vw;background:var(--card);border-left:1px solid #1d2323;transform:translateX(100%);transition:.25s ease;z-index:100}
+  .drawer.open{transform:translateX(0)}
+  .drawer header{position:sticky;top:0;background:var(--card)}
+  .drawer .content{padding:16px;height:calc(100% - 64px);overflow:auto;display:flex;flex-direction:column;gap:16px}
+  .cart-item{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;border:1px solid #1f2525;border-radius:12px;padding:8px}
+  .cart-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
+  .qty{display:flex;align-items:center;background:#0f1313;border:1px solid #1f2525;border-radius:8px}
+  .qty button{background:transparent;color:var(--text);border:none;padding:6px 10px;cursor:pointer}
+  .qty input{width:40px;text-align:center;background:transparent;color:var(--text);border:none}
+  .total{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid #1d2323;margin-top:8px;color:var(--text)}
+  form.checkout{display:flex;flex-direction:column;gap:10px;background:#101515;border:1px solid #1d2323;padding:12px;border-radius:12px}
+  form.checkout input, form.checkout textarea, form.checkout select{width:100%;padding:10px;border-radius:10px;border:1px solid #1f2525;background:#0c1010;color:var(--text)}
+  .inline{display:flex;gap:10px}
+  .inline>*{flex:1}
+  .alert{padding:10px;border-radius:10px;background:#0f1412;border:1px solid #1a2a23;color:#94d6b4}
+  .confirm{background:rgba(24,34,30,.9);border:1px solid #20352c;color:#baf3d0;padding:12px;border-radius:12px}
+  @media (max-width:520px){.inline{flex-direction:column}}
+  .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="logo"><i></i> ECUBED <span class="tag">algae fertilizers</span></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn ghost" id="openCart">Cart (<span id="cartCount">0</span>)</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding:20px 16px 60px">
+  <section style="margin:8px 0 20px;color:var(--text)">
+    <h1 style="margin:.2em 0">Sustainable Algae Fertilizers</h1>
+    <p class="muted">Organic, micronutrient-rich fertilizers. Cash on delivery anywhere in Egypt.</p>
+  </section>
+
+  <section class="grid" id="productGrid"></section>
+</main>
+
+<div class="drawer" id="cartDrawer" aria-hidden="true">
+  <header class="wrap nav" style="padding:12px 16px">
+    <strong>🧺 Your Cart</strong>
+    <button class="btn ghost" id="closeCart">Close</button>
+  </header>
+  <div class="content">
+    <div id="cartList" style="display:flex;flex-direction:column;gap:10px"></div>
+
+    <div class="total">
+      <div>Subtotal</div>
+      <div><strong id="subtotal">EGP 0.00</strong></div>
+    </div>
+
+    <div class="alert">Payment method: <strong>Cash on Delivery</strong> only.</div>
+
+    <form class="checkout" id="checkoutForm">
+      <div class="inline">
+        <input required name="name" placeholder="Full name" />
+        <input required name="phone" placeholder="Phone (WhatsApp)" />
+      </div>
+      <div class="inline">
+        <input required name="city" placeholder="City" />
+        <input type="email" name="email" placeholder="Email (optional, for receipt)" />
+      </div>
+      <textarea required name="address" rows="3" placeholder="Full address (street, building, floor, landmark)"></textarea>
+      <input name="notes" placeholder="Notes (optional)" />
+      <div class="inline">
+        <!-- find your submit button and give it an id -->
+        <button class="btn" type="submit" id="placeOrderBtn">Place Order (COD)</button>
+
+        <button type="button" class="btn ghost" id="emailOrder">Email this order</button>
+        <button type="button" class="btn ghost" id="whatsOrder">Chat via WhatsApp</button>
+      </div>
+      <div id="confirmBox" class="confirm" style="display:none" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* =========================
+   CONFIG — EDIT THESE
+========================= */
+const BUSINESS_WHATSAPP = "201096412410"; // your phone in international format, no +
+const BUSINESS_EMAIL    = "algaemarketdotcom@gmail.com"; // your email (mailto fallback)
+const SHEETS_WEBHOOK    = "https://script.google.com/macros/s/AKfycbyEAl1xnl1RJpB0CiU7_HcRgkgIM0--xtIiIjHUEyJRMhRzSozItnVgu6qcYTLKN71v5g/exec"; // Apps Script URL
+const CURRENCY          = "EGP";
+
+/**
+ * VARIANT DEFINITIONS  
+ */
+const PRODUCTS = [
+  {
+    id: "POWDER-GRAMS",
+    name: "Algae Fertilizer Powder (grams)",
+    img: "https://images.unsplash.com/photo-1523654885119-cd74663cbf18?q=80&w=1200&auto=format&fit=crop",
+    variants: [
+      { id:"50g",  label:"50 g",  unit:"g",  qty:50,  price:  80 },
+      { id:"100g", label:"100 g", unit:"g",  qty:100, price: 140 },
+      { id:"200g", label:"200 g", unit:"g",  qty:200, price: 250 },
+      { id:"500g", label:"500 g", unit:"g",  qty:500, price: 560 }
+    ]
+  },
+  {
+    id: "POWDER-KG",
+    name: "Algae Fertilizer Powder (kilos)",
+    img: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1200&auto=format&fit=crop",
+    variants: [
+      { id:"1kg",  label:"1 kg",  unit:"kg", qty:1,  price: 220 },
+      { id:"2kg",  label:"2 kg",  unit:"kg", qty:2,  price: 420 },
+      { id:"5kg",  label:"5 kg",  unit:"kg", qty:5,  price: 950 },
+      { id:"10kg", label:"10 kg", unit:"kg", qty:10, price:1790 },
+      { id:"20kg", label:"20 kg", unit:"kg", qty:20, price:3390 },
+      { id:"25kg", label:"25 kg", unit:"kg", qty:25, price:4100 },
+      { id:"50kg", label:"50 kg", unit:"kg", qty:50, price:7700 }
+    ]
+  },
+  {
+    id: "LIQUID-EXTRACT",
+    name: "Liquid Algae Extract",
+    img: "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1200&auto=format&fit=crop",
+    variants: [
+      { id:"1l",  label:"1 L",  unit:"l", qty:1,  price: 180 },
+      { id:"5l",  label:"5 L",  unit:"l", qty:5,  price: 780 }
+    ]
+  }
+];
+
+/* =========================
+   HELPERS
+========================= */
+const $  = sel => document.querySelector(sel);
+const fmt = n => `${CURRENCY} ${Number(n||0).toFixed(2)}`;
+function productById(pid){ return PRODUCTS.find(p=>p.id===pid); }
+function variantById(product, vid){ return product.variants.find(v=>v.id===vid); }
+
+/* =========================
+   STATE + PERSISTENCE
+========================= */
+const state = {
+  cart: JSON.parse(localStorage.getItem("cart") || "[]"),
+  lastOrder: null,       // last submitted order (for WhatsApp/Email buttons)
+  lastOrderText: ""
+};
+function persist(){ localStorage.setItem("cart", JSON.stringify(state.cart)); }
+
+/* =========================
+   CART OPS
+========================= */
+function addToCart(pid, vid){
+  const found = state.cart.find(i=>i.pid===pid && i.vid===vid);
+  if(found){ found.qty += 1; }
+  else { state.cart.push({ pid, vid, qty:1 }); }
+  persist(); renderCart(); pulse($('#openCart'));
+}
+function removeFromCart(pid, vid){
+  state.cart = state.cart.filter(i=>!(i.pid===pid && i.vid===vid));
+  persist(); renderCart();
+}
+function updateQty(pid, vid, n){
+  const item = state.cart.find(i=>i.pid===pid && i.vid===vid);
+  if(!item) return;
+  item.qty = Math.max(1, n|0);
+  persist(); renderCart();
+}
+function subtotal(){
+  return state.cart.reduce((s,i)=>{
+    const p = productById(i.pid);
+    const v = variantById(p, i.vid);
+    return s + (v.price * i.qty);
+  }, 0);
+}
+function pulse(el){ el.style.transform='scale(1.05)'; setTimeout(()=>el.style.transform='',150); }
+
+/* =========================
+   RENDER — PRODUCTS
+========================= */
+function renderProducts(){
+  const grid = $("#productGrid");
+  grid.innerHTML = PRODUCTS.map(p => {
+    const options = p.variants.map(v=>`<option value="${v.id}">${v.label} — ${fmt(v.price)}</option>`).join('');
+    return `
+    <article class="card">
+      <img src="${p.img}" alt="${p.name}" loading="lazy"/>
+      <div class="pad">
+        <div class="row">
+          <div>
+            <div style="font-weight:700">${p.name}</div>
+            <div class="muted">ID: ${p.id}</div>
+          </div>
+        </div>
+        <select id="sel-${p.id}" aria-label="Choose quantity">
+          ${options}
+        </select>
+        <button class="btn" onclick="addToCart('${p.id}', document.getElementById('sel-${p.id}').value)">Add to Cart</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+/* =========================
+   RENDER — CART
+========================= */
+function renderCart(){
+  $("#cartCount").textContent = state.cart.reduce((s,i)=>s+i.qty,0);
+  const list = $("#cartList");
+  if(state.cart.length===0){
+    list.innerHTML = `<div class="muted">Your cart is empty.</div>`;
+    $("#subtotal").textContent = fmt(0);
+    return;
+  }
+  list.innerHTML = state.cart.map(i=>{
+    const p = productById(i.pid);
+    const v = variantById(p, i.vid);
+    const line = v.price * i.qty;
+    return `
+      <div class="cart-item">
+        <img src="${p.img}" alt="${p.name}"/>
+        <div>
+          <div style="font-weight:700">${p.name}</div>
+          <div class="muted">Variant: ${v.label} — ${fmt(v.price)} each</div>
+          <div class="qty" aria-label="quantity of packs">
+            <button onclick="updateQty('${i.pid}','${i.vid}', ${i.qty-1})">−</button>
+            <input value="${i.qty}" oninput="updateQty('${i.pid}','${i.vid}', this.value)" />
+            <button onclick="updateQty('${i.pid}','${i.vid}', ${i.qty+1})">+</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div>${fmt(line)}</div>
+          <button class="btn danger" onclick="removeFromCart('${i.pid}','${i.vid}')">Remove</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  $("#subtotal").textContent = fmt(subtotal());
+}
+
+/* =========================
+   CHECKOUT (COD) + LOGGING
+========================= */
+function orderId(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `GB-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+}
+function orderPayload(form){
+  const data = Object.fromEntries(new FormData(form));
+  const items = state.cart.map(i=>{
+    const p = productById(i.pid);
+    const v = variantById(p, i.vid);
+    return {
+      productId: p.id,
+      productName: p.name,
+      variantId: v.id,
+      variantLabel: v.label,
+      unit: v.unit,
+      packQty: v.qty,
+      priceEach: v.price,
+      packs: i.qty,
+      lineTotal: v.price * i.qty
+    };
+  });
+  const total = items.reduce((s,x)=>s+x.lineTotal,0);
+  return {
+    id: orderId(),
+    items, total,
+    customer: {
+      name: data.name, phone: data.phone, city: data.city,
+      address: data.address, notes: data.notes || "", email: data.email || ""
+    },
+    createdAt: new Date().toISOString(),
+    payment: "COD",
+    source: "website"
+  };
+}
+function encodeMultiline(obj){
+  const lines = [];
+  const money = n=>Number(n||0).toFixed(2);
+  lines.push(`Order ID: ${obj.id}`);
+  lines.push(`Date: ${new Date().toLocaleString()}`);
+  lines.push(`Payment: ${obj.payment}`);
+  lines.push(``);
+  lines.push(`Items:`);
+  obj.items.forEach(x=>{
+    lines.push(`- ${x.productName} / ${x.variantLabel} x${x.packs} — ${CURRENCY} ${money(x.priceEach)} (Line: ${CURRENCY} ${money(x.lineTotal)})`);
+  });
+  lines.push(``);
+  lines.push(`Subtotal: ${CURRENCY} ${money(obj.total)}`);
+  lines.push(``);
+  lines.push(`Customer: ${obj.customer.name}`);
+  lines.push(`Phone: ${obj.customer.phone}`);
+  lines.push(`City: ${obj.customer.city}`);
+  lines.push(`Address: ${obj.customer.address}`);
+  if(obj.customer.email) lines.push(`Email: ${obj.customer.email}`);
+  if(obj.customer.notes) lines.push(`Notes: ${obj.customer.notes}`);
+  return lines.join('\n');
+}
+async function logToSheets(order){
+  try{
+    const data = JSON.stringify(order);
+    const blob = new Blob([data], { type: "text/plain;charset=utf-8" });
+
+    // 1) Try sendBeacon (often best for cross-origin, no CORS preflight)
+    if (navigator.sendBeacon) {
+      const ok = navigator.sendBeacon(SHEETS_WEBHOOK, blob);
+      if (ok) return true;
+    }
+
+    // 2) Fallback to fetch no-cors with a "simple" content type
+    await fetch(SHEETS_WEBHOOK, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: data
+    });
+    return true;
+  } catch(err){
+    console.warn("Sheets logging failed:", err);
+    return false;
+  }
+}
+
+function openWhatsApp(text){
+  const url = `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank");
+}
+function openMailTo(text){
+  const subject = encodeURIComponent("New COD Order");
+  const body = encodeURIComponent(text);
+  window.location.href = `mailto:${BUSINESS_EMAIL}?subject=${subject}&body=${body}`;
+}
+function showConfirmation(msg){
+  const box = $("#confirmBox");
+  box.style.display='block';
+  box.textContent = msg;
+}
+function clearCart(){ state.cart = []; persist(); renderCart(); }
+
+/* =========================
+   WIRING
+========================= */
+renderProducts();
+renderCart();
+
+$("#openCart").addEventListener("click", ()=>{
+  const d = $("#cartDrawer");
+  d.classList.add("open");
+  d.setAttribute("aria-hidden","false");
+});
+$("#closeCart").addEventListener("click", ()=>{
+  const d = $("#cartDrawer");
+  d.classList.remove("open");
+  d.setAttribute("aria-hidden","true");
+});
+// helper: disable/enable a button
+function setBusy(btn, busy=true, labelWhenBusy="Sending..."){
+  if(!btn) return;
+  btn.disabled = !!busy;
+  btn.dataset.orig = btn.dataset.orig || btn.textContent;
+  btn.textContent = busy ? labelWhenBusy : btn.dataset.orig;
+}
+
+$("#checkoutForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if(state.cart.length===0){ alert("Your cart is empty."); return; }
+
+  const btn = document.getElementById("placeOrderBtn");
+  setBusy(btn, true);
+
+  try {
+    const order = orderPayload(e.target);
+    const text  = encodeMultiline(order);
+
+    // send once
+    await logToSheets(order);
+
+    // remember last order for optional Email/WhatsApp buttons
+    state.lastOrder = order;
+    state.lastOrderText = text;
+
+    showConfirmation(`✅ Order ${order.id} submitted. A separate email and row were created.`);
+    clearCart();
+  } finally {
+    setBusy(btn, false);
+  }
+});
+
+$("#checkoutForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if(state.cart.length===0){ alert("Your cart is empty."); return; }
+  const order = orderPayload(e.target);
+  const text = encodeMultiline(order);
+
+  // 1) log to sheets (server also emails you)
+  await logToSheets(order);
+
+  // 2) remember last order so buttons can use it
+  state.lastOrder = order;
+  state.lastOrderText = text;
+
+  // 3) UX confirm + clear cart
+  showConfirmation(`✅ Order ${order.id} submitted. We saved it and emailed the store. You can also email or WhatsApp the summary using the buttons below.`);
+  clearCart();
+});
+
+$("#emailOrder").addEventListener("click", ()=>{
+  const form = $("#checkoutForm");
+  // use last order if available, otherwise build a preview from form + current cart
+  let text = state.lastOrderText;
+  if(!text){
+    if(state.cart.length===0){ alert("Fill the form and click Place Order first (or keep items in cart)."); return; }
+    if(!form.reportValidity()) return;
+    const preview = orderPayload(form);
+    text = encodeMultiline(preview);
+  }
+  openMailTo(text);
+});
+
+$("#whatsOrder").addEventListener("click", ()=>{
+  const form = $("#checkoutForm");
+  let text = state.lastOrderText;
+  if(!text){
+    if(state.cart.length===0){ alert("Fill the form and click Place Order first (or keep items in cart)."); return; }
+    if(!form.reportValidity()) return;
+    const preview = orderPayload(form);
+    text = encodeMultiline(preview);
+  }
+  openWhatsApp(text);
+});
+</script>
+</body>
+</html>
