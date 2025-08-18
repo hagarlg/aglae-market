@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ECUBED — Algae</title>
+<title>Algae-Market — Algae</title>
 <style>
   :root{
     --bg:#0e1111; --card:#151a1a; --muted:#8aa29e; --text:#eef3f2; --brand:#39d98a; --brand-2:#2bb673; --danger:#ff5c6c;
@@ -29,7 +29,7 @@
   .drawer.open{transform:translateX(0)}
   .drawer header{position:sticky;top:0;background:var(--card)}
   .drawer .content{padding:16px;height:calc(100% - 64px);overflow:auto;display:flex;flex-direction:column;gap:16px}
-  .cart-item{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;border:1px solid #1f2525;border-radius:12px;padding:8px}
+  .cart-item{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;border:1px solid #ffffff;border-radius:12px;padding:8px}
   .cart-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
   .qty{display:flex;align-items:center;background:#0f1313;border:1px solid #1f2525;border-radius:8px}
   .qty button{background:transparent;color:var(--text);border:none;padding:6px 10px;cursor:pointer}
@@ -43,22 +43,80 @@
   .confirm{background:rgba(24,34,30,.9);border:1px solid #20352c;color:#baf3d0;padding:12px;border-radius:12px}
   @media (max-width:520px){.inline{flex-direction:column}}
   .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  /* =========================
+   Cart readability overrides
+   ========================= */
+.drawer .cart-item{
+  background:#fff;                 /* white card */
+  color:#0e1111;                   /* dark text */
+  border:1px solid #e5e7eb;        /* light border */
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+
+.drawer .cart-item .muted{
+  color:#444;                      /* readable secondary text */
+}
+
+/* quantity control on light background */
+.drawer .cart-item .qty{
+  background:#ffffff;
+  border:1px solid #e5e7eb;
+}
+.drawer .cart-item .qty button,
+.drawer .cart-item .qty input{
+  color:#0e1111;                   /* dark text for +/- and number */
+}
+.drawer .cart-item .qty input{
+  background:transparent;
+}
+
+/* price text inside each item */
+.drawer .cart-item > div:last-child > div:first-child{
+  color:#0e1111;
+}
+
+/* make sure images stay vibrant */
+.drawer .cart-item img{
+  filter:none; opacity:1;
+}
+/* --- Single-product layout: narrow & centered --- */
+#productGrid.single {
+  max-width: 380px;         /* how narrow you want the section */
+  margin-inline: auto;      /* center the section */
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+/* cap card width in all cases so it never becomes too wide */
+#productGrid .card {
+  width: 100%;
+  max-width: 360px;         /* card width cap; adjust to taste */
+}
+
+/* (optional) make the product image a bit shorter so the card feels tighter */
+#productGrid .card img {
+  height: 140px;            /* was 160px */
+}
+
+
 </style>
 </head>
 <body>
 <header>
   <div class="wrap nav">
-    <div class="logo"><i></i> ECUBED <span class="tag">algae fertilizers</span></div>
+    <div class="logo"> <img src="logo.png" >Algae-Market <span class="tag"></span></div>
     <div style="display:flex;gap:8px">
       <button class="btn ghost" id="openCart">Cart (<span id="cartCount">0</span>)</button>
+      <span id="powderRemainBadge" class="tag" style="margin-left:8px"> </span>
+      
     </div>
   </div>
 </header>
 
 <main class="wrap" style="padding:20px 16px 60px">
   <section style="margin:8px 0 20px;color:var(--text)">
-    <h1 style="margin:.2em 0">Sustainable Algae Fertilizers</h1>
-    <p class="muted">Organic, micronutrient-rich fertilizers. Cash on delivery anywhere in Egypt.</p>
+    <h1 style="margin:.2em 0">Algae Biomass</h1>
+    <p class="muted"></p>
   </section>
 
   <section class="grid" id="productGrid"></section>
@@ -108,52 +166,87 @@
 ========================= */
 const BUSINESS_WHATSAPP = "201096412410"; // your phone in international format, no +
 const BUSINESS_EMAIL    = "algaemarketdotcom@gmail.com"; // your email (mailto fallback)
-const SHEETS_WEBHOOK    = "https://script.google.com/macros/s/AKfycbyEAl1xnl1RJpB0CiU7_HcRgkgIM0--xtIiIjHUEyJRMhRzSozItnVgu6qcYTLKN71v5g/exec"; // Apps Script URL
+const SHEETS_WEBHOOK    = "https://script.google.com/macros/s/AKfycbyz45QGlvnnBaoKHsTSMnNE7Blc41IkJBwmuFghIgj7tD1NqPql-aDYT3G2A76xANwGRw/exec"; // Apps Script URL
 const CURRENCY          = "EGP";
 
 /**
  * VARIANT DEFINITIONS  
  */
 const PRODUCTS = [
-  {
+ /* {
     id: "POWDER-GRAMS",
     name: "Algae Fertilizer Powder (grams)",
     img: "https://images.unsplash.com/photo-1523654885119-cd74663cbf18?q=80&w=1200&auto=format&fit=crop",
     variants: [
-      { id:"50g",  label:"50 g",  unit:"g",  qty:50,  price:  80 },
+      //{ id:"50g",  label:"50 g",  unit:"g",  qty:50,  price:  80 },
       { id:"100g", label:"100 g", unit:"g",  qty:100, price: 140 },
       { id:"200g", label:"200 g", unit:"g",  qty:200, price: 250 },
       { id:"500g", label:"500 g", unit:"g",  qty:500, price: 560 }
     ]
-  },
+  },*/
   {
     id: "POWDER-KG",
-    name: "Algae Fertilizer Powder (kilos)",
-    img: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1200&auto=format&fit=crop",
+    name: "Cholorella Dried Powder - not for human consumption",
+    img: "chol2.jpg",
     variants: [
-      { id:"1kg",  label:"1 kg",  unit:"kg", qty:1,  price: 220 },
-      { id:"2kg",  label:"2 kg",  unit:"kg", qty:2,  price: 420 },
-      { id:"5kg",  label:"5 kg",  unit:"kg", qty:5,  price: 950 },
-      { id:"10kg", label:"10 kg", unit:"kg", qty:10, price:1790 },
-      { id:"20kg", label:"20 kg", unit:"kg", qty:20, price:3390 },
-      { id:"25kg", label:"25 kg", unit:"kg", qty:25, price:4100 },
-      { id:"50kg", label:"50 kg", unit:"kg", qty:50, price:7700 }
+        { id:"100g", label:"100 g", unit:"g",  qty:500, price: 250 },
+      { id:"1kg",  label:"1 kg",  unit:"kg", qty:1,  price: 1500 },
+      //{ id:"2kg",  label:"2 kg",  unit:"kg", qty:2,  price: 420 },
+     // { id:"5kg",  label:"5 kg",  unit:"kg", qty:5,  price: 7500 },
+     // { id:"10kg", label:"10 kg", unit:"kg", qty:10, price:15000 },
+      //{ id:"20kg", label:"20 kg", unit:"kg", qty:20, price:3390 },
+      //{ id:"25kg", label:"25 kg", unit:"kg", qty:25, price:4100 },
+      //{ id:"50kg", label:"50 kg", unit:"kg", qty:50, price:7700 }
     ]
   },
-  {
-    id: "LIQUID-EXTRACT",
-    name: "Liquid Algae Extract",
-    img: "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1200&auto=format&fit=crop",
-    variants: [
-      { id:"1l",  label:"1 L",  unit:"l", qty:1,  price: 180 },
-      { id:"5l",  label:"5 L",  unit:"l", qty:5,  price: 780 }
-    ]
-  }
+  
 ];
+// =========================
+// INVENTORY — POWDER (grams)
+// =========================
+
+// LS keys
+
+// initialize remaining stock once
+
+
+
 
 /* =========================
    HELPERS
 ========================= */
+function isPowderProduct(pid){
+  return pid === "POWDER-GRAMS" || pid === "POWDER-KG";
+}
+function variantGrams(product, variant){
+  // only powder contributes to this inventory
+  if(!isPowderProduct(product.id)) return 0;
+  if(variant.unit === "g") return variant.qty;
+  if(variant.unit === "kg") return variant.qty * 1000;
+  return 0;
+}
+function cartPowderGrams(){
+  return state.cart.reduce((sum,i)=>{
+    const p = productById(i.pid); const v = variantById(p, i.vid);
+    return sum + variantGrams(p, v) * i.qty;
+  }, 0);
+}
+function orderPowderGrams(items){
+  return items.reduce((sum,x)=>{
+    if(isPowderProduct(x.productId)){
+      // x.packQty is units per pack; unit is in x.unit
+      const gramsPerPack = (x.unit === "g" ? x.packQty : (x.unit === "kg" ? x.packQty*1000 : 0));
+      return sum + gramsPerPack * x.packs;
+    }
+    return sum;
+  }, 0);
+}
+function deductPowderStock(grams){
+  const remain = getPowderRemain();
+  setPowderRemain(Math.max(0, remain - (grams|0)));
+  renderPowderRemain();
+}
+
 const $  = sel => document.querySelector(sel);
 const fmt = n => `${CURRENCY} ${Number(n||0).toFixed(2)}`;
 function productById(pid){ return PRODUCTS.find(p=>p.id===pid); }
@@ -169,24 +262,78 @@ const state = {
 };
 function persist(){ localStorage.setItem("cart", JSON.stringify(state.cart)); }
 
+
+
 /* =========================
    CART OPS
 ========================= */
 function addToCart(pid, vid){
+  const p = productById(pid);
+  const v = variantById(p, vid);
+
+  // check powder stock
+  if(isPowderProduct(pid)){
+    const need = variantGrams(p, v);
+    const remain = getPowderRemain();
+    const inCart = cartPowderGrams();
+    if(need > Math.max(0, remain - inCart)){
+      alert("Not enough powder remaining for this variant.");
+      recheckAddButton(pid);
+      return;
+    }
+  }
+
   const found = state.cart.find(i=>i.pid===pid && i.vid===vid);
-  if(found){ found.qty += 1; }
-  else { state.cart.push({ pid, vid, qty:1 }); }
+  if(found){
+    // increasing by one pack -> verify
+    if(isPowderProduct(pid)){
+      const extra = variantGrams(p, v);
+      const remain = getPowderRemain();
+      const inCart = cartPowderGrams();
+      if(extra > Math.max(0, remain - inCart)){
+        alert("Not enough powder remaining to add another pack.");
+        return;
+      }
+    }
+    found.qty += 1;
+  } else {
+    state.cart.push({ pid, vid, qty:1 });
+  }
   persist(); renderCart(); pulse($('#openCart'));
+  // refresh buttons availability text for all powder products
+  PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
 }
+
 function removeFromCart(pid, vid){
   state.cart = state.cart.filter(i=>!(i.pid===pid && i.vid===vid));
   persist(); renderCart();
+  PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
 }
+
 function updateQty(pid, vid, n){
   const item = state.cart.find(i=>i.pid===pid && i.vid===vid);
   if(!item) return;
-  item.qty = Math.max(1, n|0);
+  const newQty = Math.max(1, n|0);
+
+  const p = productById(pid);
+  const v = variantById(p, vid);
+
+  if(isPowderProduct(pid)){
+    // compute what grams would be *if* we set to newQty
+    const currentInCart = cartPowderGrams();
+    const itemCurrentGrams = variantGrams(p, v) * item.qty;
+    const itemNewGrams = variantGrams(p, v) * newQty;
+    const projected = currentInCart - itemCurrentGrams + itemNewGrams;
+
+    if(projected > getPowderRemain()){
+      alert("Quantity exceeds powder inventory.");
+      return;
+    }
+  }
+
+  item.qty = newQty;
   persist(); renderCart();
+  PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
 }
 function subtotal(){
   return state.cart.reduce((s,i)=>{
@@ -204,6 +351,9 @@ function renderProducts(){
   const grid = $("#productGrid");
   grid.innerHTML = PRODUCTS.map(p => {
     const options = p.variants.map(v=>`<option value="${v.id}">${v.label} — ${fmt(v.price)}</option>`).join('');
+    const btnId = `btn-${p.id}`;
+    const selId = `sel-${p.id}`;
+
     return `
     <article class="card">
       <img src="${p.img}" alt="${p.name}" loading="lazy"/>
@@ -214,13 +364,46 @@ function renderProducts(){
             <div class="muted">ID: ${p.id}</div>
           </div>
         </div>
-        <select id="sel-${p.id}" aria-label="Choose quantity">
+        <select id="${selId}" aria-label="Choose quantity" onchange="recheckAddButton('${p.id}')">
           ${options}
         </select>
-        <button class="btn" onclick="addToCart('${p.id}', document.getElementById('sel-${p.id}').value)">Add to Cart</button>
+        <button id="${btnId}" class="btn" onclick="addToCart('${p.id}', document.getElementById('${selId}').value)">Add to Cart</button>
+        
       </div>
     </article>`;
   }).join('');
+  // after rendering, update availability states
+  PRODUCTS.forEach(p=>{
+    if(isPowderProduct(p.id)){
+      const remainEl = document.getElementById(`remain-${p.id}`);
+      if(remainEl) remainEl.textContent = getPowderRemain();
+      recheckAddButton(p.id);
+    }
+  });
+}
+function recheckAddButton(pid){
+  const sel = document.getElementById(`sel-${pid}`);
+  const btn = document.getElementById(`btn-${pid}`);
+  if(!sel || !btn) return;
+
+  // while inventory is loading, keep powder buttons disabled
+  if (isPowderProduct(pid) && !INV_READY) {
+    btn.disabled = true;
+    btn.textContent = "Checking stock…";
+    return;
+  }
+
+  const p = productById(pid);
+  const v = variantById(p, sel.value);
+  const need = variantGrams(p, v);
+
+  const remain = getPowderRemain();
+  const inCart = cartPowderGrams();
+  const free = Math.max(0, remain - inCart);
+
+  const ok = !isPowderProduct(pid) || need <= free;
+  btn.disabled = !ok;
+  btn.textContent = ok ? "Add to Cart" : "Out of Stock";
 }
 
 /* =========================
@@ -232,6 +415,8 @@ function renderCart(){
   if(state.cart.length===0){
     list.innerHTML = `<div class="muted">Your cart is empty.</div>`;
     $("#subtotal").textContent = fmt(0);
+    renderPowderRemain();
+    PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
     return;
   }
   list.innerHTML = state.cart.map(i=>{
@@ -344,6 +529,32 @@ async function logToSheets(order){
     return false;
   }
 }
+// ===== GLOBAL INVENTORY (from Apps Script) =====
+let POWDER_REMAIN = 0; // live value for this page
+let INV_READY = false;
+
+function getPowderRemain(){ return POWDER_REMAIN; }
+function setPowderRemain(_){ /* server owns stock now; no-op */ }
+
+function loadGlobalInventory(){
+  const cb = "__inv_cb_" + Math.random().toString(36).slice(2);
+  window[cb] = grams => {
+    POWDER_REMAIN = Number(grams||0)|0;
+    INV_READY = true;  
+    renderPowderRemain();
+    PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
+    delete window[cb];
+  };
+  const s = document.createElement("script"); // JSONP avoids CORS
+  s.src = SHEETS_WEBHOOK + "?action=getInv&cb=" + cb;
+  document.head.appendChild(s);
+}
+
+function renderPowderRemain(){
+  const el = document.getElementById("powderRemainText");
+  if(el){ el.textContent = getPowderRemain(); }
+}
+
 
 function openWhatsApp(text){
   const url = `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(text)}`;
@@ -366,6 +577,18 @@ function clearCart(){ state.cart = []; persist(); renderCart(); }
 ========================= */
 renderProducts();
 renderCart();
+
+renderPowderRemain();
+
+PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
+loadGlobalInventory();
+
+if (PRODUCTS.length === 1) {
+    document.getElementById('productGrid').classList.add('single');
+  }
+
+  PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
+  loadGlobalInventory();
 
 $("#openCart").addEventListener("click", ()=>{
   const d = $("#cartDrawer");
@@ -395,38 +618,46 @@ $("#checkoutForm").addEventListener("submit", async (e)=>{
   try {
     const order = orderPayload(e.target);
     const text  = encodeMultiline(order);
+    // === stock snapshot (send to sheet) ===
+    const remainBefore = getPowderRemain();
+    const needPowder   = orderPowderGrams(order.items);
+    const remainAfter  = Math.max(0, remainBefore - needPowder);
 
-    // send once
+    // block oversell (safety)
+    if(needPowder > remainBefore){
+    alert("Sorry, your cart exceeds the available powder stock. Please reduce quantities.");
+    return;
+    }
+
+    // attach simple top-level fields (columns in your sheet)
+    order.powderRemainBefore = remainBefore;  // grams
+    order.powderDeductGrams  = needPowder;    // grams
+    order.powderRemainAfter  = remainAfter;   // grams
+
+
+   
+
+    // send + persist "last order"
     await logToSheets(order);
-
-    // remember last order for optional Email/WhatsApp buttons
     state.lastOrder = order;
     state.lastOrderText = text;
 
+    // ✅ commit inventory deduction
+  
+
     showConfirmation(`✅ Order ${order.id} submitted. A separate email and row were created.`);
     clearCart();
+    loadGlobalInventory();
   } finally {
     setBusy(btn, false);
+    // refresh availability
+    renderPowderRemain();
+    PRODUCTS.forEach(x=> isPowderProduct(x.id) && recheckAddButton(x.id));
   }
 });
 
-$("#checkoutForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  if(state.cart.length===0){ alert("Your cart is empty."); return; }
-  const order = orderPayload(e.target);
-  const text = encodeMultiline(order);
 
-  // 1) log to sheets (server also emails you)
-  await logToSheets(order);
 
-  // 2) remember last order so buttons can use it
-  state.lastOrder = order;
-  state.lastOrderText = text;
-
-  // 3) UX confirm + clear cart
-  showConfirmation(`✅ Order ${order.id} submitted. We saved it and emailed the store. You can also email or WhatsApp the summary using the buttons below.`);
-  clearCart();
-});
 
 $("#emailOrder").addEventListener("click", ()=>{
   const form = $("#checkoutForm");
