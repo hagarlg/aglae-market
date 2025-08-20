@@ -686,24 +686,34 @@ $("#whatsOrder").addEventListener("click", ()=>{
   openWhatsApp(text);
 });
 </script>
-  <script>
-// Traffic counter using countapi.xyz
-async function updateVisitorCount() {
-  const namespace = "algaemarket.com"; // any unique name
-  const key = "homepage";              // can be different per page
-  try {
-    const res = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
-    const data = await res.json();
-    document.getElementById("visitorCount").textContent = data.value;
-  } catch (err) {
-    console.error("Visitor counter error:", err);
-  }
-}
-updateVisitorCount();
-</script>
-
-</body>
+    <!-- put this before </body> -->
   <footer style="text-align:center;color:var(--muted);padding:10px">
-  Visitors: <span id="visitorCount">0</span>
-</footer>
+    Visitors: <span id="visitorCount">0</span>
+  </footer>
+
+  <script>
+  // Traffic counter using countapi.xyz
+  window.addEventListener('DOMContentLoaded', async () => {
+    const el = document.getElementById("visitorCount");
+    if (!el) return; // safety guard
+
+    const namespace = "algae-market.com"; // keep stable & unique
+    const key = "homepage";               // per-page key if you want
+
+    try {
+      const res = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+      // You can switch "hit" -> "get" if you want to read without incrementing
+      const data = await res.json();
+      el.textContent = data.value ?? 0;
+    } catch (err) {
+      console.error("Visitor counter error:", err);
+      el.textContent = "—";
+    }
+  });
+  </script>
+</body>
 </html>
+
+
+
+  
