@@ -168,7 +168,7 @@
 ========================= */
 const BUSINESS_WHATSAPP = "201096412410"; // your phone in international format, no +
 const BUSINESS_EMAIL    = "algaemarketdotcom@gmail.com"; // your email (mailto fallback)
-const SHEETS_WEBHOOK    = "https://script.google.com/macros/s/AKfycbyz45QGlvnnBaoKHsTSMnNE7Blc41IkJBwmuFghIgj7tD1NqPql-aDYT3G2A76xANwGRw/exec"; // Apps Script URL
+const SHEETS_WEBHOOK    = "https://script.google.com/macros/s/AKfycbyJ8GyUhaakbpckwVv6U4NtzwmBS1Lr5L2iTDBxaP6YHtXwtHNVc3-q1TPWNdmymXEdBg/exec"; // Apps Script URL
 const CURRENCY          = "EGP";
 
 /**
@@ -686,31 +686,44 @@ $("#whatsOrder").addEventListener("click", ()=>{
   openWhatsApp(text);
 });
 </script>
-    <!-- put this before </body> -->
-  <footer style="text-align:center;color:var(--muted);padding:10px">
-    Visitors: <span id="visitorCount">0</span>
-  </footer>
+    <footer style="text-align:center;color:var(--muted);padding:10px">
+  Visitors: <span id="visitorCount">0</span>
+</footer>
 
-  <script>
-  // Traffic counter using countapi.xyz
-  window.addEventListener('DOMContentLoaded', async () => {
-    const el = document.getElementById("visitorCount");
-    if (!el) return; // safety guard
+<script>
+(function(){
+  const el = document.getElementById('visitorCount');
+  if (!el) return;
 
-    const namespace = "algae-market.com"; // keep stable & unique
-    const key = "homepage";               // per-page key if you want
+  // one increment per browser per day (optional)
+  const dayKey = 'visCount-' + new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  const action = localStorage.getItem(dayKey) ? 'getCounter' : 'hitCounter';
 
+  // build a unique JSONP callback
+  const cb = '__vcb_' + Math.random().toString(36).slice(2);
+  window[cb] = function(resp){
     try {
-      const res = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
-      // You can switch "hit" -> "get" if you want to read without incrementing
-      const data = await res.json();
-      el.textContent = data.value ?? 0;
-    } catch (err) {
-      console.error("Visitor counter error:", err);
-      el.textContent = "—";
+      if (resp && resp.ok && typeof resp.value === 'number') {
+        el.textContent = resp.value;
+        if (action === 'hitCounter') localStorage.setItem(dayKey, '1');
+      } else {
+        el.textContent = '—';
+        console.warn('Counter response:', resp);
+      }
+    } finally {
+      delete window[cb];
+      scr && scr.remove && scr.remove();
     }
-  });
-  </script>
+  };
+
+  // JSONP <script> — uses your existing SHEETS_WEBHOOK
+  const scr = document.createElement('script');
+  scr.src = `${SHEETS_WEBHOOK}?action=${action}&key=homepage&cb=${cb}`;
+  document.head.appendChild(scr);
+})();
+</script>
+
+
 </body>
 </html>
 
