@@ -110,6 +110,7 @@
       <span id="powderRemainBadge" class="tag" style="margin-left:8px"> </span>
       
     </div>
+    
   </div>
 </header>
 
@@ -159,6 +160,7 @@
     </form>
   </div>
 </div>
+
 
 <script>
 /* =========================
@@ -684,5 +686,24 @@ $("#whatsOrder").addEventListener("click", ()=>{
   openWhatsApp(text);
 });
 </script>
+  <script>
+// Traffic counter using countapi.xyz
+async function updateVisitorCount() {
+  const namespace = "algaemarket.com"; // any unique name
+  const key = "homepage";              // can be different per page
+  try {
+    const res = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+    const data = await res.json();
+    document.getElementById("visitorCount").textContent = data.value;
+  } catch (err) {
+    console.error("Visitor counter error:", err);
+  }
+}
+updateVisitorCount();
+</script>
+
 </body>
+  <footer style="text-align:center;color:var(--muted);padding:10px">
+  Visitors: <span id="visitorCount">0</span>
+</footer>
 </html>
