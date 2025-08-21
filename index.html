@@ -388,7 +388,6 @@ function recheckAddButton(pid){
   const btn = document.getElementById(`btn-${pid}`);
   if(!sel || !btn) return;
 
-  // while inventory is loading, keep powder buttons disabled
   if (isPowderProduct(pid) && !INV_READY) {
     btn.disabled = true;
     btn.textContent = "Checking stock…";
@@ -405,8 +404,27 @@ function recheckAddButton(pid){
 
   const ok = !isPowderProduct(pid) || need <= free;
   btn.disabled = !ok;
-  btn.textContent = ok ? "Add to Cart" : "Out of Stock";
+
+  if(ok){
+    btn.textContent = "Add to Cart";
+    // hide any old restock message
+    let msg = document.getElementById(`restock-${pid}`);
+    if(msg) msg.remove();
+  } else {
+    btn.textContent = "Out of Stock";
+
+    // add restock date message if not already there
+    if(!document.getElementById(`restock-${pid}`)){
+      const restockMsg = document.createElement("div");
+      restockMsg.id = `restock-${pid}`;
+      restockMsg.className = "muted";
+      restockMsg.style.marginTop = "6px";
+      restockMsg.textContent = "We will restock on 30-9-2025";
+      btn.insertAdjacentElement("afterend", restockMsg);
+    }
+  }
 }
+
 
 /* =========================
    RENDER — CART
