@@ -97,6 +97,32 @@
 #productGrid .card img {
   height: 140px;            /* was 160px */
 }
+/* Waitlist modal styles */
+.wl-modal{
+  position:fixed;inset:0;display:grid;place-items:center;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
+}
+/* Ensure hidden attribute wins even if a component sets display */
+[hidden] { display: none !important; }
+
+.wl-card{
+  width:min(420px,92vw);background:var(--card,#151a1a);
+  color:var(--text,#eef3f2);border:1px solid #1d2323;border-radius:16px;
+  padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.4)
+}
+.wl-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.wl-row input{
+  background:#0f1313;color:var(--text,#eef3f2);border:1px solid #2a2f2f;
+  padding:10px;border-radius:10px;outline:none
+}
+.wl-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+#wlCancel{background:#2a2f2f;color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
+#wlSubmit{background:var(--brand,#39d98a);color:#0b0f0f;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+.wl-msg{min-height:1.25rem;margin-top:8px;color:var(--muted,#8aa29e);font-size:.9rem}
+.btn-waitlist{
+  background:linear-gradient(180deg,var(--brand,#39d98a),var(--brand-2,#2bb673));
+  color:#0b0f0f;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700
+}
 
 
 </style>
@@ -168,7 +194,7 @@
 ========================= */
 const BUSINESS_WHATSAPP = "201096412410"; // your phone in international format, no +
 const BUSINESS_EMAIL    = "algaemarketdotcom@gmail.com"; // your email (mailto fallback)
-const SHEETS_WEBHOOK    = "https://script.google.com/macros/s/AKfycbyJ8GyUhaakbpckwVv6U4NtzwmBS1Lr5L2iTDBxaP6YHtXwtHNVc3-q1TPWNdmymXEdBg/exec"; // Apps Script URL
+const SHEETS_WEBHOOK    = "https://script.google.com/macros/s/AKfycbyqozhJgTpbg-R7_xxpvYncqlBd64Vf5_i4yMz3SYiU0dmOPIoAYRMfpYoCrR4_vE7ZyQ/exec"; // Apps Script URL
 const CURRENCY          = "EGP";
 
 /**
@@ -370,6 +396,9 @@ function renderProducts(){
           ${options}
         </select>
         <button id="${btnId}" class="btn" onclick="addToCart('${p.id}', document.getElementById('${selId}').value)">Add to Cart</button>
+       <button type="button" class="btn-waitlist waitlistBtn" data-sku="${p.id}">قائمة الآنتظار</button>
+
+
         
       </div>
     </article>`;
@@ -388,6 +417,7 @@ function recheckAddButton(pid){
   const btn = document.getElementById(`btn-${pid}`);
   if(!sel || !btn) return;
 
+  // while inventory is loading, keep powder buttons disabled
   if (isPowderProduct(pid) && !INV_READY) {
     btn.disabled = true;
     btn.textContent = "Checking stock…";
@@ -404,27 +434,8 @@ function recheckAddButton(pid){
 
   const ok = !isPowderProduct(pid) || need <= free;
   btn.disabled = !ok;
-
-  if(ok){
-    btn.textContent = "Add to Cart";
-    // hide any old restock message
-    let msg = document.getElementById(`restock-${pid}`);
-    if(msg) msg.remove();
-  } else {
-    btn.textContent = "Out of Stock";
-
-    // add restock date message if not already there
-    if(!document.getElementById(`restock-${pid}`)){
-      const restockMsg = document.createElement("div");
-      restockMsg.id = `restock-${pid}`;
-      restockMsg.className = "muted";
-      restockMsg.style.marginTop = "6px";
-      restockMsg.textContent = "We will restock on 30-9-2025";
-      btn.insertAdjacentElement("afterend", restockMsg);
-    }
-  }
+  btn.textContent = ok ? "Add to Cart" : "Out of Stock";
 }
-
 
 /* =========================
    RENDER — CART
@@ -739,9 +750,141 @@ $("#whatsOrder").addEventListener("click", ()=>{
   scr.src = `${SHEETS_WEBHOOK}?action=${action}&key=homepage&cb=${cb}`;
   document.head.appendChild(scr);
 })();
+/***********************
+ * WAITLIST — Frontend
+ ***********************/
+
+/* ===== Waitlist open (delegated) ===== */
+function openWaitlistModal(){
+  const modal = document.getElementById('waitlistModal');
+  const msg   = document.getElementById('wlMsg');
+  if (modal) modal.hidden = false;
+  if (msg) { msg.textContent = ''; msg.style.color = 'var(--muted,#8aa29e)'; }
+}
+
+document.getElementById('productGrid').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.waitlistBtn');
+  if (!btn) return;
+  openWaitlistModal();
+});
+
 </script>
 
+<!-- Waitlist Modal -->
+<div id="waitlistModal" class="wl-modal" hidden>
+  <div class="wl-card">
+    <h3>Join the Waitlist</h3>
+    <form id="waitlistForm">
+      <div class="wl-row">
+        <label>الاسم</label>
+        <input type="text" name="name" required placeholder="Your full name" />
+      </div>
+      <div class="wl-row">
+        <label>التليفون</label>
+        <input type="tel" name="phone" required placeholder="+20 1X XXX XXXX" />
+      </div>
+      <div class="wl-row">
+        <label>الكمية بالكيلو</label>
+        <input type="number" name="quantity" min="1" step="1" required value="1" />
+      </div>
 
+      <!-- Honeypot (anti-bot) – keep hidden -->
+      <input type="text" name="company" tabindex="-1" autocomplete="off" style="position:absolute;left:-99999px;opacity:0" />
+
+      <div class="wl-actions">
+        <button type="button" id="wlCancel">Cancel</button>
+        <button type="submit" id="wlSubmit">Submit</button>
+      </div>
+      <p id="wlMsg" class="wl-msg"></p>
+    </form>
+  </div>
+</div>
+<script>
+(function(){
+ const WEBHOOK = SHEETS_WEBHOOK; // reuse your Apps Script URL
+
+  // Use the IDs that exist in your HTML:
+  const openBtn = document.getElementById('waitlistBtn');      // button inside card
+  const modal   = document.getElementById('waitlistModal');    // <div id="waitlistModal" ...>
+  const form    = document.getElementById('waitlistForm');     // <form id="waitlistForm">
+  const cancel  = document.getElementById('wlCancel');
+  const msg     = document.getElementById('wlMsg');
+  const submit  = document.getElementById('wlSubmit');
+
+
+  function open(){ modal.hidden = false; msg.textContent=''; }
+  function close(){ modal.hidden = true; }
+
+  openBtn?.addEventListener('click', open);
+  cancel?.addEventListener('click', close);
+  modal?.addEventListener('click', (e)=>{ if(e.target===modal) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+
+  function validate(name, phone, qty){
+    if(!name || name.trim().length < 2) return 'Please enter your name.';
+    const digits = (phone||'').replace(/\D/g,'');
+    if(digits.length < 8) return 'Please enter a valid phone.';
+    if(!(qty > 0)) return 'Quantity must be at least 1.';
+    return '';
+  }
+
+  // JSONP caller (avoids CORS; uses doGet)
+  function callAddWaitlistJSONP({name, phone, quantity, page}) {
+    return new Promise((resolve)=>{
+      const cbName = "__wl_cb_" + Math.random().toString(36).slice(2);
+      window[cbName] = (payload)=>{
+        try { resolve(payload); } finally {
+          delete window[cbName];
+          s.remove();
+        }
+      };
+      const params = new URLSearchParams({
+        action: 'addWaitlist',
+        name, phone, quantity: String(quantity),
+        page: page || location.href,
+        cb: cbName
+      });
+      const s = document.createElement('script');
+      s.src = WEBHOOK + "?" + params.toString();
+      document.head.appendChild(s);
+    });
+  }
+
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    msg.style.color = 'var(--muted,#8aa29e)';
+    msg.textContent = '';
+
+    const fd = new FormData(form);
+    if (fd.get('company')) { msg.textContent = 'Submission blocked.'; return; }
+
+    const name = String(fd.get('name')||'').trim();
+    const phone = String(fd.get('phone')||'').trim();
+    const quantity = Number(fd.get('quantity')||0);
+    const err = validate(name, phone, quantity);
+    if (err) { msg.textContent = err; return; }
+
+    submit.disabled = true; const prev = submit.textContent; submit.textContent = 'Submitting…';
+    try{
+      const res = await callAddWaitlistJSONP({ name, phone, quantity, page: location.href });
+      if (res && res.ok) {
+        msg.style.color = 'var(--brand,#39d98a)';
+        msg.textContent = 'Added! We’ll contact you when stock is back.';
+        form.reset();
+        setTimeout(close, 1200);
+      } else {
+        msg.style.color = 'var(--danger,#ff5c6c)';
+        msg.textContent = 'Couldn’t add you. Please try again.';
+      }
+    } catch {
+      msg.style.color = 'var(--danger,#ff5c6c)';
+      msg.textContent = 'Network error. Please try again.';
+    } finally {
+      submit.disabled = false; submit.textContent = prev;
+    }
+  });
+})();
+</script>
 </body>
 </html>
 
