@@ -52,6 +52,8 @@
   border:1px solid #e5e7eb;        /* light border */
   box-shadow:0 2px 10px rgba(0,0,0,.06);
 }
+.error { color: var(--danger, #ff5c6c); font-size: 12px; display:block; margin-top:6px; }
+
 
 .drawer .cart-item .muted{
   color:#444;                      /* readable secondary text */
@@ -781,7 +783,17 @@ document.getElementById('productGrid').addEventListener('click', (e)=>{
       </div>
       <div class="wl-row">
         <label>التليفون</label>
-        <input type="tel" name="phone" required placeholder="+20 1X XXX XXXX" />
+        <input
+        id="phone"
+        name="phone"
+        type="tel"
+        dir="ltr"
+        inputmode="numeric"
+        autocomplete="tel"
+        placeholder="01012345678"
+        required
+        />
+        <small id="phone-error" class="error" aria-live="polite"></small>
       </div>
       <div class="wl-row">
         <label>الكمية بالكيلو</label>
@@ -821,12 +833,14 @@ document.getElementById('productGrid').addEventListener('click', (e)=>{
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 
   function validate(name, phone, qty){
-    if(!name || name.trim().length < 2) return 'Please enter your name.';
-    const digits = (phone||'').replace(/\D/g,'');
-    if(digits.length < 8) return 'Please enter a valid phone.';
-    if(!(qty > 0)) return 'Quantity must be at least 1.';
-    return '';
-  }
+  if(!name || name.trim().length < 2) return 'Please enter your name.';
+  const local = normalizeToEgMobile(phone||'');
+  if(!/^01[0125]\d{8}$/.test(local)) return 'Please enter a valid Egyptian mobile (e.g., 01012345678).';
+  if(!(qty > 0)) return 'Quantity must be at least 1.';
+  return '';
+}
+
+
 
   // JSONP caller (avoids CORS; uses doGet)
   function callAddWaitlistJSONP({name, phone, quantity, page}) {
@@ -884,7 +898,82 @@ document.getElementById('productGrid').addEventListener('click', (e)=>{
     }
   });
 })();
+
+// --- Config ---------------------------------------------------------------
+const ALLOW_ARABIC_INPUT = true;                 // accept + auto-convert Arabic digits
+const EG_MOBILE_RE = /^01[0125]\d{8}$/;         // 010/011/012/015 + 8 digits
+
+// --- Utils: Arabic/Persian digits → ASCII --------------------------------
+function normalizeArabicDigits(str) {
+  let out = "";
+  for (const ch of str) {
+    const code = ch.codePointAt(0);
+    if (code >= 0x0660 && code <= 0x0669) out += String.fromCharCode(code - 0x0660 + 0x30);
+    else if (code >= 0x06F0 && code <= 0x06F9) out += String.fromCharCode(code - 0x06F0 + 0x30);
+    else out += ch;
+  }
+  return out;
+}
+function keepDigitsPlus(str) {
+  str = str.replace(/[^\d+]/g, "");
+  if ((str.match(/\+/g) || []).length > 1) str = "+" + str.replace(/[^\d]/g, "");
+  return str;
+}
+// Normalize to Egyptian local format starting with 0
+function normalizeToEgMobile(raw) {
+  let v = normalizeArabicDigits(raw);
+  v = keepDigitsPlus(v);
+  v = v.replace(/^\+?0020/, "").replace(/^\+?20/, "");
+  if (!v.startsWith("0")) v = "0" + v;
+  return v.replace(/\D/g, "");
+}
+
+// --- Hook up to the *correct* form ---------------------------------------
+const form  = document.querySelector("#waitlistForm");  // <-- fixed id
+const phone = document.querySelector("#waitlistForm #phone");
+const errEl = document.querySelector("#phone-error");
+
+// If modal isn't on this page for some reason, abort safely
+if (form && phone && errEl) {
+  // Live input: auto-convert Arabic/Persian digits
+  phone.addEventListener("input", () => {
+    const before = phone.value;
+    const containsArabic = /[\u0660-\u0669\u06F0-\u06F9]/.test(before);
+
+    if (!ALLOW_ARABIC_INPUT && containsArabic) {
+      phone.setCustomValidity("اكتب الأرقام بالإنجليزي (0-9) فقط.");
+      errEl.textContent = "اكتب الأرقام بالإنجليزي (0-9) فقط.";
+      return;
+    }
+
+    phone.setCustomValidity("");
+    errEl.textContent = "";
+
+    const converted = normalizeArabicDigits(before);
+    if (converted !== before) phone.value = converted;
+  });
+
+  // Submit: normalize → validate (do NOT preventDefault here if valid)
+  form.addEventListener("submit", (e) => {
+    const normalized = normalizeToEgMobile(phone.value);
+    phone.value = normalized; // send normalized value to backend
+
+    phone.setCustomValidity("");
+    errEl.textContent = "";
+
+    if (!EG_MOBILE_RE.test(normalized)) {
+      e.preventDefault();
+      const msg = "أدخل رقم موبايل مصري صحيح (مثال: 01012345678).";
+      phone.setCustomValidity(msg);
+      errEl.textContent = msg;
+      phone.reportValidity();
+    }
+  });
+}
+
+
 </script>
+
 </body>
 </html>
 
