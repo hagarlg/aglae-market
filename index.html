@@ -1,403 +1,732 @@
-<!doctype html>
-<html lang="en" dir="auto">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Algae-Market — Algae</title>
-<style>
-  :root{
-    --bg:#0e1111; --card:#151a1a; --muted:#8aa29e; --text:#eef3f2; --brand:#39d98a; --brand-2:#2bb673; --danger:#ff5c6c;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:linear-gradient(180deg,#0c0f0f,#0f1313);}
-  header{position:sticky;top:0;background:rgba(42, 44, 44, 0.9);backdrop-filter:blur(8px);z-index:10;border-bottom:1px solid #1d2323}
-  .wrap{max-width:1100px;margin:0 auto;padding:16px}
-  .nav{display:flex;align-items:center;gap:16px;justify-content:space-between;color:var(--text)}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:700}
-  .logo i{width:28px;height:28px;border-radius:8px;background:radial-gradient(120% 120% at 20% 20%,#55ffa8,transparent 60%),radial-gradient(120% 120% at 80% 80%,#2bb673,transparent 60%),#1a221f;box-shadow:0 0 24px rgba(57,217,138,.35) inset}
-  .tag{font-size:12px;color:var(--muted)}
-  .btn{cursor:pointer;border:none;border-radius:12px;padding:10px 14px;background:var(--brand);color:#052d1b;font-weight:700; transition: background 0.2s;}
-  .btn:hover{background:var(--brand-2)}
-  .btn.ghost{background:transparent;color:var(--text);border:1px solid #2a3434}
-  .btn.danger{background:var(--danger);color:#2a0a0e}
-  main .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-  .card{background:var(--card);color:var(--text);border:1px solid #1d2323;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-  .card img{width:100%;height:160px;object-fit:cover;background:#0b0f0f}
-  .card .pad{padding:14px;display:flex;flex-direction:column;gap:8px}
-  .muted{color:var(--muted);font-size:14px}
-  .drawer{position:fixed;right:0;top:0;height:100%;width:420px;max-width:95vw;background:var(--card);border-left:1px solid #1d2323;transform:translateX(100%);transition:.25s ease;z-index:100}
-  .drawer.open{transform:translateX(0)}
-  .drawer header{position:sticky;top:0;background:var(--card)}
-  .drawer .content{padding:16px;height:calc(100% - 64px);overflow:auto;display:flex;flex-direction:column;gap:16px}
-  .cart-item{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;border:1px solid #ffffff;border-radius:12px;padding:8px}
-  .cart-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
-  .qty{display:flex;align-items:center;background:#0f1313;border:1px solid #1f2525;border-radius:8px}
-  .qty button{background:transparent;color:var(--text);border:none;padding:6px 10px;cursor:pointer}
-  .qty input{width:40px;text-align:center;background:transparent;color:var(--text);border:none}
-  .total{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid #1d2323;margin-top:8px;color:var(--text)}
-  form.checkout{display:flex;flex-direction:column;gap:10px;background:#101515;border:1px solid #1d2323;padding:12px;border-radius:12px}
-  form.checkout input, form.checkout textarea, form.checkout select{width:100%;padding:10px;border-radius:10px;border:1px solid #1f2525;background:#0c1010;color:var(--text); font-family: inherit;}
-  .inline{display:flex;gap:10px}
-  .inline>*{flex:1}
-  .alert{padding:10px;border-radius:10px;background:#0f1412;border:1px solid #1a2a23;color:#94d6b4; text-align: center;}
-  .confirm{background:rgba(24,34,30,.9);border:1px solid #20352c;color:#baf3d0;padding:12px;border-radius:12px; text-align: center;}
-  @media (max-width:520px){.inline{flex-direction:column}}
-  .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
-  
-.drawer .cart-item{
-  background:#fff;
-  color:#0e1111;
-  border:1px solid #e5e7eb;
-  box-shadow:0 2px 10px rgba(0,0,0,.06);
-}
-.error { color: var(--danger, #ff5c6c); font-size: 12px; display:block; margin-top:6px; }
-
-.drawer .cart-item .muted{ color:#444; }
-
-.drawer .cart-item .qty{
-  background:#ffffff;
-  border:1px solid #e5e7eb;
-}
-.drawer .cart-item .qty button,
-.drawer .cart-item .qty input{ color:#0e1111; }
-.drawer .cart-item .qty input{ background:transparent; }
-
-.drawer .cart-item > div:last-child > div:first-child{ color:#0e1111; font-weight: bold;}
-.drawer .cart-item img{ filter:none; opacity:1; }
-
-#productGrid.single {
-  max-width: 380px;
-  margin-inline: auto;
-  grid-template-columns: 1fr;
-  justify-items: center;
-}
-
-#productGrid .card {
-  width: 100%;
-  max-width: 360px;
-}
-
-#productGrid .card img { height: 140px; }
-
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
 </head>
 <body>
-<header>
-  <div class="wrap nav">
-    <div class="logo"> <img src="logo.png" alt="Logo" style="height: 28px;">Algae-Market <span class="tag"></span></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn ghost" id="openCart">العربة | Cart (<span id="cartCount">0</span>)</button>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Tajawal:wght@400;500;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  html, body { margin:0; padding:0; }
+  html { font-size:130%; }
+  :root { --font-heading: "Caprasimo", "Lalezar", serif; --font-body: "Figtree", "Tajawal", sans-serif; }
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6 { letter-spacing:0 !important; }
+  [dir="rtl"] .am-label-mono { letter-spacing:0; }
+  [dir="rtl"] .am-select { background-position: left 18px center; padding:12px 18px 12px 44px; }
+  * { box-sizing:border-box; }
+  .am-chip { border:1px solid var(--color-neutral-300); background:transparent; color:var(--color-text); padding:8px 16px; border-radius:999px; font-family:var(--font-body); font-size:17px; font-weight:600; cursor:pointer; }
+  .am-chip:hover { background:var(--color-accent-100); border-color:var(--color-accent-300); }
+  .am-chip[aria-pressed="true"] { background:var(--color-accent); color:var(--color-neutral-100); border-color:var(--color-accent); }
+  .am-nav-btn { background:transparent; border:1px solid transparent; padding:10px 20px; border-radius:999px; font-family:var(--font-heading); font-size:18px; color:var(--color-text); cursor:pointer; }
+  .am-nav-btn:hover { background:var(--color-accent-100); }
+  .am-nav-btn[aria-current="page"] { background:var(--color-text); color:var(--color-neutral-100); }
+  .am-blob { border-radius:999px; }
+  .am-imgph { position:relative; border-radius:var(--radius-md); overflow:hidden; aspect-ratio: 4 / 3; display:flex; align-items:flex-end; padding:14px; }
+  .am-imgph::before { content:""; position:absolute; inset:0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--tone,var(--color-accent-2)) 20%, transparent) 0 10px, color-mix(in srgb, var(--tone,var(--color-accent-2)) 8%, transparent) 10px 20px); }
+  .am-imgph > * { position:relative; }
+  .am-label-mono { font-family:var(--font-body); font-size:15px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-neutral-700); }
+  .am-input { background:var(--color-neutral-100); border:1px solid var(--color-neutral-300); border-radius:999px; padding:12px 18px; font-family:var(--font-body); font-size:20px; color:var(--color-text); outline:none; width:100%; }
+  .am-input:focus-visible { border-color:var(--color-accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent); }
+  .am-textarea { background:var(--color-neutral-100); border:1px solid var(--color-neutral-300); border-radius:var(--radius-md); padding:14px 18px; font-family:var(--font-body); font-size:20px; color:var(--color-text); outline:none; width:100%; resize:vertical; min-height:96px; }
+  .am-textarea:focus-visible { border-color:var(--color-accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent); }
+  .am-select { appearance:none; background:var(--color-neutral-100) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23201e1d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 18px center; border:1px solid var(--color-neutral-300); border-radius:999px; padding:12px 44px 12px 18px; font-family:var(--font-body); font-size:20px; color:var(--color-text); width:100%; }
+
+  /* Responsive — tablet */
+  @media (max-width: 960px) {
+    .am-container { padding-left:24px !important; padding-right:24px !important; }
+    .am-header-row { padding:16px 24px !important; }
+    .am-hero { padding:56px 24px 32px !important; }
+    .am-hero h1 { font-size:79px !important; }
+    .am-hero-blob-1 { display:none; }
+    .am-hero-blob-2 { display:none; }
+    .am-grid-3 { grid-template-columns:repeat(2, 1fr) !important; }
+    .am-detail-grid { grid-template-columns:1fr !important; }
+    .am-detail-title { font-size:59px !important; }
+    .am-stats { flex-wrap:wrap; gap:var(--space-4) !important; }
+    .am-form { grid-template-columns:1fr !important; }
+    .am-footer { flex-direction:column; gap:12px; text-align:center; }
+  }
+
+  /* Responsive — phone */
+  @media (max-width: 600px) {
+    .am-header-row { flex-direction:column; gap:12px; padding:14px 20px !important; }
+    .am-brand-text { font-size:29px !important; }
+    .am-nav-btn { padding:8px 14px; font-size:17px; }
+    .am-hero { padding:40px 20px 24px !important; }
+    .am-hero h1 { font-size:53px !important; line-height:1; }
+    .am-hero p { font-size:21px !important; }
+    .am-kicker { font-size:15px !important; }
+    .am-filters { padding:8px 20px 16px !important; }
+    .am-grid-3 { grid-template-columns:1fr !important; gap:var(--space-4) !important; }
+    .am-section { padding-left:20px !important; padding-right:20px !important; }
+    .am-card-actions { flex-direction:column; }
+    .am-admin { padding:40px 20px 80px !important; }
+    .am-admin-title { font-size:53px !important; }
+    .am-admin-actions { flex-direction:column; align-items:stretch !important; gap:12px; }
+    .am-detail { padding:24px 20px 80px !important; }
+    .am-detail-title { font-size:45px !important; }
+    .am-detail-stats { grid-template-columns:1fr !important; padding:var(--space-4) !important; }
+    .am-modal { padding:var(--space-6) !important; }
+    .am-modal h2 { font-size:35px !important; }
+    .am-modal-row { grid-template-columns:100px 1fr !important; }
+    .am-stat-num { font-size:37px !important; }
+    .am-hero-blob-1, .am-hero-blob-2 { display:none; }
+  }
+</style>
+</helmet>
+
+<div dir="{{ dir }}" lang="{{ lang }}" style="min-height:100vh; background:var(--color-bg); color:var(--color-text); font-family:var(--font-body);">
+
+  <header style="border-bottom:1px solid var(--color-divider); background:var(--color-bg); position:sticky; top:0; z-index:10;">
+    <div class="am-header-row" style="max-width:1240px; margin:0 auto; padding:22px 40px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <button onClick="{{ goMarket }}" style="background:transparent; border:none; cursor:pointer; display:flex; align-items:center; gap:12px; padding:0;">
+        <span class="am-blob" style="width:34px; height:34px; background:radial-gradient(circle at 32% 32%, var(--color-accent-2-300), var(--color-accent-2-600) 65%, var(--color-accent-2-800)); box-shadow: inset -4px -5px 8px color-mix(in srgb, var(--color-accent-2-900) 40%, transparent);"></span>
+        <span class="am-brand-text" style="font-family:var(--font-heading); font-size:35px; letter-spacing:-0.01em;">algae.market</span>
+      </button>
+      <nav style="display:flex; gap:4px; align-items:center;">
+        <button class="am-nav-btn" onClick="{{ goVendors }}" aria-current="{{ vendorsCurrent }}">{{ t.navVendors }}</button>
+        <button class="am-nav-btn" onClick="{{ toggleLang }}" style="font-family:var(--font-body); font-weight:700; border-color:var(--color-neutral-300);">{{ langLabel }}</button>
+        <sc-if value="{{ isAdminUnlocked }}" hint-placeholder-val="{{ false }}">
+          <button class="am-nav-btn" onClick="{{ goAdmin }}" aria-current="{{ adminCurrent }}">{{ t.navAdmin }}</button>
+          <button class="am-nav-btn" onClick="{{ onLogout }}" style="font-size:16px; color:var(--color-neutral-700);">{{ t.signOut }}</button>
+        </sc-if>
+      </nav>
     </div>
-  </div>
-</header>
-
-<main class="wrap" style="padding:20px 16px 60px">
-  <section style="margin:8px 0 20px;color:var(--text); text-align: center;">
-    <h1 style="margin:.2em 0">طحالب حيوية | Algae Biomass</h1>
-    <p class="muted"></p>
-  </section>
-
-  <section class="grid" id="productGrid"></section>
-</main>
-
-<div class="drawer" id="cartDrawer" aria-hidden="true">
-  <header class="wrap nav" style="padding:12px 16px">
-    <strong>🧺 عربة التسوق | Your Cart</strong>
-    <button class="btn ghost" id="closeCart">إغلاق | Close</button>
   </header>
-  <div class="content">
-    <div id="cartList" style="display:flex;flex-direction:column;gap:10px"></div>
 
-    <div class="total">
-      <div><strong>المجموع الفرعي | Subtotal</strong></div>
-      <div><strong id="subtotal">EGP 0.00</strong></div>
-    </div>
-
-    <div class="alert">
-      طريقة الدفع: <strong>الدفع عند الاستلام</strong> فقط.<br>
-      <span style="font-size: 0.9em; opacity: 0.8;">Payment method: <strong>Cash on Delivery</strong> only.</span>
-    </div>
-
-    <form class="checkout" id="checkoutForm">
-      <div class="inline">
-        <input required name="name" placeholder="الاسم بالكامل | Full name" />
-        <input required name="phone" placeholder="رقم الهاتف (واتساب) | Phone (WhatsApp)" />
+  <sc-if value="{{ isVendors }}" hint-placeholder-val="{{ false }}">
+    <section class="am-hero" style="max-width:1240px; margin:0 auto; padding:72px 40px 32px; position:relative;">
+      <span class="am-blob am-hero-blob-1" style="position:absolute; top:56px; inset-inline-end:80px; width:190px; height:190px; background: radial-gradient(circle at 40% 40%, var(--color-accent-300), var(--color-accent-500) 70%); opacity:0.45; filter:blur(2px);"></span>
+      <div style="max-width:760px; position:relative;">
+        <h1 style="font-size:100px; line-height:0.96; letter-spacing:-0.02em; margin:0 0 var(--space-4);"><span style="color:var(--color-accent-2-700);">{{ t.heroTitle }}</span></h1>
+        <p style="font-size:25px; line-height:1.5; color:var(--color-neutral-700); max-width:54ch; margin:0;">{{ t.heroSub }}</p>
       </div>
-      <div class="inline">
-        <input required name="city" placeholder="المدينة | City" />
+    </section>
+
+    <section class="am-section" style="max-width:1240px; margin:0 auto; padding:24px 40px 96px;">
+      <div class="am-grid-3" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-6);">
+        <sc-for list="{{ vendorList }}" as="v" hint-placeholder-count="6">
+          <article class="card elev-sm" style="background:var(--color-neutral-100); border-radius:var(--radius-lg); padding:var(--space-6); display:flex; flex-direction:column; gap:var(--space-3);">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span class="am-blob" style="width:52px; height:52px; flex:none; background:radial-gradient(circle at 32% 32%, color-mix(in srgb, {{ v.tone }} 45%, var(--color-neutral-100)), {{ v.tone }} 75%); box-shadow: inset -3px -4px 7px color-mix(in srgb, var(--color-neutral-900) 22%, transparent);"></span>
+              <div>
+                <h3 style="margin:0; line-height:1.1;">{{ v.company }}</h3>
+                <span class="am-label-mono">{{ v.origin }}</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ v.cats }}" as="c" hint-placeholder-count="2">
+                <span class="tag tag-accent-2">{{ c }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:end; margin-top:auto; padding-top:var(--space-3); border-top:1px solid var(--color-divider);">
+              <div>
+                <h6 style="color:var(--color-neutral-700); margin-bottom:2px;">{{ t.contact }}</h6>
+                <div style="font-size:20px; font-weight:600;">{{ v.vendor }}</div>
+              </div>
+              <div style="text-align:end;">
+                <h6 style="color:var(--color-neutral-700); margin-bottom:2px;">{{ t.listings }}</h6>
+                <div style="font-family:var(--font-heading); font-size:32px;">{{ v.count }}</div>
+              </div>
+            </div>
+            <div class="am-card-actions" style="display:flex; gap:8px;">
+              <button class="btn btn-primary" onClick="{{ v.onOpen }}" style="flex:1;">{{ t.viewProducts }}</button>
+              <button class="btn btn-ghost" onClick="{{ v.onContact }}" style="flex:1;">{{ t.contactBtn }}</button>
+            </div>
+          </article>
+        </sc-for>
       </div>
-      <textarea required name="address" rows="3" placeholder="العنوان بالتفصيل (الشارع، المبنى، الدور، علامة مميزة) | Full address"></textarea>
-      <input name="notes" placeholder="ملاحظات (اختياري) | Notes (optional)" />
-      <div class="inline">
-        <button class="btn" type="submit" id="placeOrderBtn" style="width: 100%; font-size: 1.05em;">اطلب الآن عبر واتساب | Order Now via WhatsApp</button>
-      </div>
-      <div id="confirmBox" class="confirm" style="display:none" aria-live="polite"></div>
-    </form>
-  </div>
-</div>
+    </section>
+  </sc-if>
 
-<script>
-/* =========================
-   CONFIG
-========================= */
-const BUSINESS_WHATSAPP = "201070185284"; // Updated WhatsApp Number
-const CURRENCY          = "EGP";
-
-/* =========================
-   PRODUCTS
-========================= */
-const PRODUCTS = [
-  {
-    id: "POWDER-KG",
-    name: "Chlorella Dried Powder - (كلوريلا بودره مجففه) not for human consumption",
-    img: "PHOTO-2026-03-25-00-38-24.jpg",
-    variants: [
-      { id:"50g",  label:"50 جم | g",  unit:"g",  qty:50,  price: 100 },
-      { id:"100g", label:"100 جم | g", unit:"g",  qty:100, price: 150 },
-      { id:"250g", label:"250 جم | g", unit:"g",  qty:250, price: 310 },
-      { id:"500g", label:"500 جم | g", unit:"g",  qty:500, price: 540 },
-      { id:"1kg",  label:"1 كجم | kg",  unit:"kg", qty:1,   price: 930 },
-      { id:"5kg",  label:"5 كجم | kg",  unit:"kg", qty:5,   price: 4500 }
-    ]
-  }
-];
-
-const $  = sel => document.querySelector(sel);
-const fmt = n => `${CURRENCY} ${Number(n||0).toFixed(2)}`;
-function productById(pid){ return PRODUCTS.find(p=>p.id===pid); }
-function variantById(product, vid){ return product.variants.find(v=>v.id===vid); }
-
-/* =========================
-   STATE + PERSISTENCE
-========================= */
-const state = {
-  cart: JSON.parse(localStorage.getItem("cart") || "[]")
-};
-function persist(){ localStorage.setItem("cart", JSON.stringify(state.cart)); }
-
-/* =========================
-   CART OPS
-========================= */
-function addToCart(pid, vid){
-  const found = state.cart.find(i=>i.pid===pid && i.vid===vid);
-  if(found){
-    found.qty += 1;
-  } else {
-    state.cart.push({ pid, vid, qty:1 });
-  }
-  persist(); 
-  renderCart(); 
-  pulse($('#openCart'));
-
-  // Automatically open cart when item is added
-  const d = $("#cartDrawer");
-  d.classList.add("open");
-  d.setAttribute("aria-hidden","false");
-}
-
-function removeFromCart(pid, vid){
-  state.cart = state.cart.filter(i=>!(i.pid===pid && i.vid===vid));
-  persist(); renderCart();
-}
-
-function updateQty(pid, vid, n){
-  const item = state.cart.find(i=>i.pid===pid && i.vid===vid);
-  if(!item) return;
-  item.qty = Math.max(1, n|0);
-  persist(); renderCart();
-}
-
-function subtotal(){
-  return state.cart.reduce((s,i)=>{
-    const p = productById(i.pid);
-    const v = variantById(p, i.vid);
-    return s + (v.price * i.qty);
-  }, 0);
-}
-function pulse(el){ el.style.transform='scale(1.05)'; setTimeout(()=>el.style.transform='',150); }
-
-/* =========================
-   RENDER — PRODUCTS
-========================= */
-function renderProducts(){
-  const grid = $("#productGrid");
-  grid.innerHTML = PRODUCTS.map(p => {
-    const options = p.variants.map(v=>`<option value="${v.id}">${v.label} — ${fmt(v.price)}</option>`).join('');
-    const btnId = `btn-${p.id}`;
-    const selId = `sel-${p.id}`;
-
-    return `
-    <article class="card">
-      <img src="${p.img}" alt="${p.name}" loading="lazy"/>
-      <div class="pad">
-        <div class="row">
-          <div>
-            <div style="font-weight:700">${p.name}</div>
-            <div class="muted">ID: ${p.id}</div>
-          </div>
-        </div>
-        <select id="${selId}" aria-label="Choose quantity">
-          ${options}
-        </select>
-        <button id="${btnId}" class="btn" onclick="addToCart('${p.id}', document.getElementById('${selId}').value)">أضف إلى العربة | Add to Cart</button>
-      </div>
-    </article>`;
-  }).join('');
-}
-
-/* =========================
-   RENDER — CART
-========================= */
-function renderCart(){
-  $("#cartCount").textContent = state.cart.reduce((s,i)=>s+i.qty,0);
-  const list = $("#cartList");
-  if(state.cart.length===0){
-    list.innerHTML = `<div class="muted" style="text-align:center; padding: 20px 0;">عربة التسوق فارغة<br>Your cart is empty.</div>`;
-    $("#subtotal").textContent = fmt(0);
-    return;
-  }
-  list.innerHTML = state.cart.map(i=>{
-    const p = productById(i.pid);
-    const v = variantById(p, i.vid);
-    const line = v.price * i.qty;
-    return `
-      <div class="cart-item">
-        <img src="${p.img}" alt="${p.name}"/>
+  <sc-if value="{{ isVendor }}" hint-placeholder-val="{{ false }}">
+    <section class="am-detail" style="max-width:1240px; margin:0 auto; padding:40px 40px 96px;">
+      <button class="btn btn-ghost" onClick="{{ goVendors }}" style="margin-bottom:var(--space-6);">{{ t.allVendors }}</button>
+      <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <span class="am-blob" style="width:84px; height:84px; flex:none; background:radial-gradient(circle at 32% 32%, color-mix(in srgb, {{ vendor.tone }} 45%, var(--color-neutral-100)), {{ vendor.tone }} 75%); box-shadow: inset -4px -6px 10px color-mix(in srgb, var(--color-neutral-900) 22%, transparent);"></span>
         <div>
-          <div style="font-weight:700; font-size: 0.9em; margin-bottom: 4px;">${p.name}</div>
-          <div class="muted" style="font-size: 0.8em; margin-bottom: 6px;">النوع | Variant: ${v.label} <br> ${fmt(v.price)} للوحدة | each</div>
-          <div class="qty" aria-label="quantity of packs" style="display:inline-flex;">
-            <button onclick="updateQty('${i.pid}','${i.vid}', ${i.qty-1})">−</button>
-            <input value="${i.qty}" oninput="updateQty('${i.pid}','${i.vid}', this.value)" />
-            <button onclick="updateQty('${i.pid}','${i.vid}', ${i.qty+1})">+</button>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-          <div>${fmt(line)}</div>
-          <button class="btn danger" style="padding: 6px 10px; font-size: 12px;" onclick="removeFromCart('${i.pid}','${i.vid}')">إزالة | Remove</button>
+          <h6 class="am-kicker" style="color:var(--color-accent-700); margin-bottom:8px;">{{ vendor.origin }}</h6>
+          <h1 class="am-detail-title" style="font-size:79px; line-height:1; margin:0; letter-spacing:-0.02em;">{{ vendor.company }}</h1>
         </div>
       </div>
-    `;
-  }).join('');
-  $("#subtotal").textContent = fmt(subtotal());
-}
+      <div class="am-detail-stats" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-4); background:var(--color-surface); border-radius:var(--radius-lg); padding:var(--space-6); margin:var(--space-6) 0 var(--space-8);">
+        <div><h6 style="color:var(--color-neutral-700);">{{ t.contact }}</h6><div style="font-size:23px; font-weight:600;">{{ vendor.vendor }}</div></div>
+        <div><h6 style="color:var(--color-neutral-700);">{{ t.phone }}</h6><a dir="ltr" href="{{ vendor.tel }}" style="font-size:23px; font-weight:600; color:var(--color-accent-700);">{{ vendor.phone }}</a></div>
+        <div><h6 style="color:var(--color-neutral-700);">{{ t.listings }}</h6><div style="font-family:var(--font-heading); font-size:35px;">{{ vendor.count }}</div></div>
+      </div>
+      <h4 style="margin:0 0 var(--space-4);">{{ t.productsFrom }} {{ vendor.company }}</h4>
+      <div class="am-grid-3" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-6);">
+        <sc-for list="{{ vendorProducts }}" as="p" hint-placeholder-count="3">
+          <article class="card elev-sm" style="background:var(--color-neutral-100); border-radius:var(--radius-lg); overflow:hidden; display:flex; flex-direction:column; padding:var(--space-4);">
+            <div class="washed am-imgph" style="--tone: {{ p.tone }}; background: color-mix(in srgb, {{ p.tone }} 18%, var(--color-neutral-100));">
+              <sc-if value="{{ p.hasImage }}" hint-placeholder-val="{{ false }}">
+                <img src="{{ p.image }}" alt="{{ p.name }}" referrerpolicy="no-referrer" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+              </sc-if>
+              <sc-if value="{{ p.noImage }}" hint-placeholder-val="{{ true }}">
+                <span class="am-label-mono" style="background:var(--color-neutral-100); padding:4px 10px; border-radius:999px;">{{ p.imageLabel }}</span>
+              </sc-if>
+            </div>
+            <div style="padding:var(--space-4) var(--space-2) var(--space-2); display:flex; flex-direction:column; gap:var(--space-2); flex:1;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+                <span class="tag tag-accent-2">{{ p.category }}</span>
+                <span class="am-label-mono">{{ p.origin }}</span>
+              </div>
+              <h3 style="margin:0;">{{ p.name }}</h3>
+              <p style="color:var(--color-neutral-700); margin:0;">{{ p.blurb }}</p>
+              <div style="display:flex; justify-content:space-between; align-items:end; margin-top:auto; padding-top:var(--space-3); border-top:1px solid var(--color-divider);">
+                <h6 style="color:var(--color-neutral-700); margin:0;">{{ t.price }}</h6>
+                <div style="font-family:var(--font-heading); font-size:29px;">{{ p.price }}</div>
+              </div>
+              <div class="am-card-actions" style="display:flex; gap:8px; margin-top:var(--space-3);">
+                <button class="btn btn-ghost" onClick="{{ p.onView }}" style="flex:1;">{{ t.viewDetails }}</button>
+                <button class="btn btn-primary" onClick="{{ p.onContact }}" style="flex:1;">{{ t.contactBtn }}</button>
+              </div>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
 
-/* =========================
-   CHECKOUT (WHATSAPP ONLY)
-========================= */
-function orderId(){
-  const d = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  return `GB-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
-}
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <section class="am-detail" style="max-width:1120px; margin:0 auto; padding:40px 40px 96px;">
+      <button class="btn btn-ghost" onClick="{{ goMarket }}" style="margin-bottom:var(--space-6);">{{ t.back }}</button>
+      <div class="am-detail-grid" style="display:grid; grid-template-columns:1.05fr 1fr; gap:var(--space-8); align-items:start;">
+        <div class="washed am-imgph" style="--tone: {{ detail.tone }}; background: color-mix(in srgb, {{ detail.tone }} 22%, var(--color-neutral-100)); aspect-ratio: 1 / 1; border-radius:var(--radius-lg);">
+          <sc-if value="{{ detail.hasImage }}" hint-placeholder-val="{{ false }}">
+            <img src="{{ detail.image }}" alt="{{ detail.name }}" referrerpolicy="no-referrer" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+          </sc-if>
+          <sc-if value="{{ detail.noImage }}" hint-placeholder-val="{{ true }}">
+            <span class="am-label-mono" style="background:var(--color-neutral-100); padding:6px 12px; border-radius:999px;">{{ detail.imageLabel }}</span>
+          </sc-if>
+        </div>
+        <div>
+          <span class="tag tag-accent-2" style="margin-bottom:var(--space-3); display:inline-block;">{{ detail.category }}</span>
+          <h1 class="am-detail-title" style="font-size:85px; line-height:1; margin:0 0 var(--space-3); letter-spacing:-0.02em;">{{ detail.name }}</h1>
+          <p style="font-size:24px; color:var(--color-neutral-700); margin:0 0 var(--space-6);">{{ detail.blurb }}</p>
 
-function orderPayload(form){
-  const data = Object.fromEntries(new FormData(form));
-  const items = state.cart.map(i=>{
-    const p = productById(i.pid);
-    const v = variantById(p, i.vid);
-    return {
-      productName: p.name,
-      variantLabel: v.label,
-      priceEach: v.price,
-      packs: i.qty,
-      lineTotal: v.price * i.qty
-    };
-  });
-  const total = items.reduce((s,x)=>s+x.lineTotal,0);
-  return {
-    id: orderId(),
-    items, total,
-    customer: {
-      name: data.name, phone: data.phone, city: data.city,
-      address: data.address, notes: data.notes || ""
-    },
-    payment: "COD"
+          <div class="am-detail-stats" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); background:var(--color-surface); border-radius:var(--radius-lg); padding:var(--space-6);">
+            <div><h6 style="color:var(--color-neutral-700);">{{ t.price }}</h6><div style="font-family:var(--font-heading); font-size:37px;">{{ detail.price }}</div></div>
+            <div><h6 style="color:var(--color-neutral-700);">{{ t.origin }}</h6><div style="font-family:var(--font-heading); font-size:29px;">{{ detail.origin }}</div></div>
+            <div><h6 style="color:var(--color-neutral-700);">{{ t.vendor }}</h6><div style="font-size:23px; font-weight:600;">{{ detail.vendor }}</div></div>
+            <div><h6 style="color:var(--color-neutral-700);">{{ t.company }}</h6><button onClick="{{ detail.onVendor }}" style="background:transparent; border:none; padding:0; cursor:pointer; font-family:var(--font-body); font-size:23px; font-weight:600; color:var(--color-accent-700); text-align:start; text-decoration:underline; text-underline-offset:3px;">{{ detail.company }}</button></div>
+          </div>
+
+          <h4 style="margin:var(--space-6) 0 var(--space-3);">{{ t.about }}</h4>
+          <p style="color:var(--color-neutral-700);">{{ detail.longBlurb }}</p>
+
+          <button class="btn btn-primary" onClick="{{ detail.onContact }}" style="margin-top:var(--space-4); padding:16px 28px; font-size:21px;">{{ t.contactVendorBtn }}</button>
+        </div>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+    <section style="max-width:460px; margin:0 auto; padding:96px 40px 120px;">
+      <h6 style="color:var(--color-accent-700); margin-bottom:var(--space-3);">{{ t.restricted }}</h6>
+      <h1 style="font-size:69px; line-height:1; margin:0 0 var(--space-3);">{{ t.signIn }}</h1>
+      <p style="color:var(--color-neutral-700); margin:0 0 var(--space-6);">{{ t.signInSub }}</p>
+      <form onSubmit="{{ onLogin }}" style="display:flex; flex-direction:column; gap:var(--space-3);">
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:17px; font-weight:600;">{{ t.password }}</span>
+          <input class="am-input" name="password" type="password" autofocus="" required="" placeholder="••••••••">
+        </label>
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:17px; color:var(--color-accent-700); font-weight:600;">{{ t.wrongPw }}</span>
+        </sc-if>
+        <button type="submit" class="btn btn-primary" style="padding:14px 20px; margin-top:var(--space-2);">{{ t.unlock }}</button>
+        <button type="button" class="btn btn-ghost" onClick="{{ goMarket }}" style="margin-top:var(--space-1);">{{ t.back }}</button>
+        <p class="text-muted" style="font-size:16px; margin-top:var(--space-4);">{{ t.demoPw }}<strong>algae</strong></p>
+      </form>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+    <section class="am-admin" style="max-width:900px; margin:0 auto; padding:64px 40px 120px; position:relative;">
+      <span class="am-blob" style="position:absolute; top:80px; inset-inline-end:-40px; width:180px; height:180px; background: var(--color-accent-2-200); opacity:0.6;"></span>
+      <h6 style="color:var(--color-accent-700); margin-bottom:var(--space-3);">{{ t.adminKicker }}</h6>
+      <h1 class="am-admin-title" style="font-size:85px; line-height:1; margin:0 0 var(--space-3);">{{ t.adminTitle }}</h1>
+      <p style="font-size:23px; color:var(--color-neutral-700); max-width:60ch; margin:0 0 var(--space-6);">{{ t.adminSub }}</p>
+
+      <sc-if value="{{ isConfigured }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; gap:10px; background:color-mix(in srgb, var(--color-accent-2-200) 60%, transparent); border:1px solid var(--color-accent-2-300); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:var(--space-6);">
+          <span style="width:10px; height:10px; border-radius:999px; background:var(--color-accent-2-700);"></span>
+          <span style="font-size:18px; font-weight:600;">{{ t.connected }}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ notConfigured }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--color-accent-100); border:1px solid var(--color-accent-300); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:var(--space-6);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <span style="width:10px; height:10px; border-radius:999px; background:var(--color-accent-600);"></span>
+            <span style="font-size:18px; font-weight:700;">{{ t.notConnected }}</span>
+          </div>
+          <p style="font-size:17px; color:var(--color-neutral-700); margin:0;">{{ t.setup1 }} <code>Algae Market.dc.html</code> {{ t.setup2 }} <code>SUPABASE_URL</code> + <code>SUPABASE_ANON</code>.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hasRemoteError }}" hint-placeholder-val="{{ false }}">
+        <div style="background:color-mix(in srgb, var(--color-accent-200) 70%, transparent); border:1px solid var(--color-accent-400); border-radius:var(--radius-md); padding:12px 16px; margin-bottom:var(--space-4); font-size:17px; color:var(--color-accent-800);">
+          {{ t.sbError }} {{ remoteError }}
+        </div>
+      </sc-if>
+
+      <form class="am-form" onSubmit="{{ onSubmit }}" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4) var(--space-6);">
+        <h4 style="grid-column:1 / -1; margin:var(--space-3) 0 0; border-top:1px solid var(--color-divider); padding-top:var(--space-4);">{{ t.sec1 }}</h4>
+
+        <div style="grid-column:1 / -1; display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="am-chip" onClick="{{ onPickExisting }}" aria-pressed="{{ existingMode }}">{{ t.existing }}</button>
+          <button type="button" class="am-chip" onClick="{{ onPickNew }}" aria-pressed="{{ newVendorMode }}">{{ t.newV }}</button>
+        </div>
+
+        <sc-if value="{{ existingMode }}" hint-placeholder-val="{{ false }}">
+          <label style="grid-column:1 / -1; display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:17px; font-weight:600;">{{ t.chooseV }}</span>
+            <select class="am-select" name="existingVendor" value="{{ selectedVendor }}" onChange="{{ onSelectVendor }}">
+              <sc-for list="{{ vendorOptions }}" as="o" hint-placeholder-count="3">
+                <option value="{{ o.company }}">{{ o.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+        </sc-if>
+
+        <sc-if value="{{ newVendorMode }}" hint-placeholder-val="{{ true }}">
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:17px; font-weight:600;">{{ t.companyName }}</span>
+            <input class="am-input" name="company" placeholder="{{ t.phCompany }}">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:17px; font-weight:600;">{{ t.contactName }}</span>
+            <input class="am-input" name="vendorName" placeholder="{{ t.phContact }}">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:17px; font-weight:600;">{{ t.phoneLabel }}</span>
+            <input class="am-input" name="phone" dir="ltr" style="text-align:{{ inputAlign }};" placeholder="01000000000">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:17px; font-weight:600;">{{ t.originLabel }}</span>
+            <input class="am-input" name="origin" placeholder="{{ t.phOrigin }}">
+          </label>
+        </sc-if>
+
+        <h4 style="grid-column:1 / -1; margin:var(--space-4) 0 0; border-top:1px solid var(--color-divider); padding-top:var(--space-4);">{{ t.sec2 }}</h4>
+        <p style="grid-column:1 / -1; margin:0; font-size:18px; color:var(--color-neutral-700);">{{ t.sec2Sub }}</p>
+
+        <sc-for list="{{ productRows }}" as="row" hint-placeholder-count="1">
+          <div style="grid-column:1 / -1; background:var(--color-surface); border-radius:var(--radius-lg); padding:var(--space-5); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4) var(--space-6);">
+            <div style="grid-column:1 / -1; display:flex; justify-content:space-between; align-items:center;">
+              <h6 style="margin:0; color:var(--color-neutral-700);">{{ t.product }} {{ row.num }}</h6>
+              <sc-if value="{{ row.removable }}" hint-placeholder-val="{{ false }}">
+                <button type="button" class="btn btn-ghost" onClick="{{ row.onRemove }}" style="padding:6px 14px; font-size:17px;">{{ t.remove }}</button>
+              </sc-if>
+            </div>
+            <label style="grid-column:1 / -1; display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:17px; font-weight:600;">{{ t.productName }}</span>
+              <input class="am-input" value="{{ row.name }}" onChange="{{ row.setName }}" placeholder="{{ t.phName }}">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:17px; font-weight:600;">{{ t.category }}</span>
+              <input class="am-input" list="am-cats" value="{{ row.category }}" onChange="{{ row.setCategory }}" placeholder="{{ t.phCat }}">
+              <datalist id="am-cats">
+                <sc-for list="{{ categoryOptions }}" as="c" hint-placeholder-count="3">
+                  <option value="{{ c }}"></option>
+                </sc-for>
+              </datalist>
+            </label>
+            <label style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:17px; font-weight:600;">{{ t.price }}</span>
+              <input class="am-input" value="{{ row.price }}" onChange="{{ row.setPrice }}" placeholder="{{ t.phPrice }}">
+            </label>
+            <label style="grid-column:1 / -1; display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:17px; font-weight:600;">{{ t.shortDesc }}</span>
+              <textarea class="am-textarea" rows="2" value="{{ row.blurb }}" onChange="{{ row.setBlurb }}" placeholder="{{ t.phDesc }}"></textarea>
+            </label>
+            <label style="grid-column:1 / -1; display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:17px; font-weight:600;">{{ t.photoLink }}</span>
+              <input class="am-input" value="{{ row.image }}" onChange="{{ row.setImage }}" dir="ltr" style="text-align:{{ inputAlign }};" placeholder="{{ t.phPhoto }}">
+              <span style="font-size:16px; color:var(--color-neutral-700);">{{ t.driveNote }}</span>
+            </label>
+          </div>
+        </sc-for>
+
+        <div style="grid-column:1 / -1;">
+          <button type="button" class="btn btn-secondary" onClick="{{ onAddRow }}">{{ t.addRow }}</button>
+        </div>
+
+        <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+          <span style="grid-column:1 / -1; font-size:17px; font-weight:600; color:var(--color-accent-700);">{{ formError }}</span>
+        </sc-if>
+
+        <div class="am-admin-actions" style="grid-column:1 / -1; display:flex; justify-content:space-between; align-items:center; margin-top:var(--space-4); padding-top:var(--space-6); border-top:1px solid var(--color-divider);">
+          <sc-if value="{{ savedFlash }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:18px; color:var(--color-accent-2-800); font-weight:600;">{{ t.published }}</span>
+          </sc-if>
+          <sc-if value="{{ notSaved }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size:17px; color:var(--color-neutral-700);">{{ saveHint }}</span>
+          </sc-if>
+          <button type="submit" class="btn btn-primary" style="padding:14px 28px; font-size:20px;">{{ submitLabel }}</button>
+        </div>
+      </form>
+
+      <sc-if value="{{ hasUserProducts }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:var(--space-8); background:var(--color-surface); border-radius:var(--radius-lg); padding:var(--space-6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3);">
+            <h4 style="margin:0;">{{ t.jsonTitle }}</h4>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-ghost" onClick="{{ onCopyJson }}">{{ copyLabel }}</button>
+              <button type="button" class="btn btn-ghost" onClick="{{ onClearProducts }}">{{ t.clearAll }}</button>
+            </div>
+          </div>
+          <p class="text-muted" style="margin-bottom:var(--space-3);">{{ t.jsonSub }}</p>
+          <pre dir="ltr" style="background:var(--color-neutral-100); border:1px solid var(--color-divider); border-radius:var(--radius-md); padding:var(--space-4); font-family:ui-monospace, 'SF Mono', Menlo, monospace; font-size:16px; line-height:1.55; overflow:auto; max-height:340px; margin:0;">{{ userProductsJson }}</pre>
+        </div>
+      </sc-if>
+    </section>
+  </sc-if>
+
+  <footer class="am-footer" style="border-top:1px solid var(--color-divider); padding:32px 40px; max-width:1240px; margin:0 auto; display:flex; justify-content:space-between;">
+    <span class="text-muted" style="font-size:17px;">{{ t.footer }}</span>
+    <div style="display:flex; gap:var(--space-3); align-items:center;">
+      <button onClick="{{ goAdmin }}" style="background:transparent; border:none; padding:0; cursor:pointer; font-family:var(--font-body); font-size:17px; color:var(--color-neutral-600); text-decoration:underline; text-underline-offset:3px;">{{ t.adminLink }}</button>
+      <span class="text-muted" style="font-size:17px;">© 2026</span>
+    </div>
+  </footer>
+
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" onClick="{{ closeModal }}" style="position:fixed; inset:0; background: color-mix(in srgb, var(--color-neutral-900) 55%, transparent); display:flex; align-items:center; justify-content:center; padding:24px; z-index:50; backdrop-filter:blur(4px);">
+      <div class="dialog elev-lg am-modal" onClick="{{ stopProp }}" style="background:var(--color-neutral-100); border-radius:var(--radius-lg); max-width:520px; width:100%; padding:var(--space-8); position:relative;">
+        <button class="btn btn-icon" onClick="{{ closeModal }}" aria-label="{{ t.close }}" style="position:absolute; top:16px; inset-inline-end:16px;">✕</button>
+        <h6 style="color:var(--color-accent-700); margin-bottom:var(--space-2);">{{ t.contactVendor }}</h6>
+        <h2 style="margin:0 0 var(--space-6);">{{ modalVendor }}</h2>
+        <div style="display:flex; flex-direction:column; gap:var(--space-3); border-top:1px solid var(--color-divider); padding-top:var(--space-4);">
+          <div class="am-modal-row" style="display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:baseline;">
+            <h6 style="color:var(--color-neutral-700); margin:0;">{{ t.vendorName }}</h6>
+            <span style="font-size:21px; font-weight:600;">{{ modalVendor }}</span>
+          </div>
+          <div class="am-modal-row" style="display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:baseline;">
+            <h6 style="color:var(--color-neutral-700); margin:0;">{{ t.company }}</h6>
+            <span style="font-size:21px; font-weight:600;">{{ modalCompany }}</span>
+          </div>
+          <div class="am-modal-row" style="display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:baseline;">
+            <h6 style="color:var(--color-neutral-700); margin:0;">{{ t.phone }}</h6>
+            <a dir="ltr" href="{{ modalTel }}" style="font-size:21px; font-weight:600; color:var(--color-accent-700);">{{ modalPhone }}</a>
+          </div>
+        </div>
+        <a class="btn btn-primary btn-block" href="{{ modalTel }}" style="margin-top:var(--space-6); padding:14px 20px;">{{ t.call }} {{ modalVendor }} {{ t.fwd }}</a>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;1280&quot;,&quot;height&quot;:&quot;900&quot;}}">
+class Component extends DCLogic {
+  // ── Supabase config ─────────────────────────────────────
+  // 1) Create a free project at https://supabase.com
+  // 2) SQL editor, run:
+  //      create table products (
+  //        id text primary key, name text, category text, price text,
+  //        blurb text, vendor text, company text, phone text,
+  //        origin text, tone text, created_at timestamptz default now()
+  //      );
+  //      alter table products enable row level security;
+  //      create policy "public read"   on products for select using (true);
+  //      create policy "public insert" on products for insert with check (true);
+  // 3) Paste your Project URL + anon public key below:
+  SUPABASE_URL = 'https://xurabhlobkoagwnqnyey.supabase.co';
+  SUPABASE_ANON = 'sb_publishable_DF0ICPjgpjzBZozw9syGiQ_SKwnxxJd';
+  ADMIN_PASSWORD = 'algae';
+
+  state = {
+    page: 'vendors',
+    filter: 'All',
+    modal: null,
+    detailId: null,
+    vendorKey: null,
+    userProducts: [],
+    savedFlash: false,
+    copied: false,
+    adminUnlocked: false,
+    loginError: false,
+    loading: false,
+    remoteError: '',
+    lang: (() => { try { return localStorage.getItem('algae.market.lang') || 'ar'; } catch (e) { return 'ar'; } })(),
+    vendorMode: 'new',
+    selectedVendor: '',
+    formError: '',
+    rows: [{ name:'', category:'', price:'', blurb:'', image:'' }],
   };
-}
 
-function encodeMultiline(obj){
-  const lines = [];
-  const money = n=>Number(n||0).toFixed(2);
-  lines.push(`📦 *New Order ID: ${obj.id}*`);
-  lines.push(`Payment: ${obj.payment}`);
-  lines.push(``);
-  lines.push(`*Items:*`);
-  obj.items.forEach(x=>{
-    lines.push(`- ${x.productName} \n  ${x.variantLabel} x${x.packs} — ${CURRENCY} ${money(x.lineTotal)}`);
-  });
-  lines.push(``);
-  lines.push(`*Subtotal: ${CURRENCY} ${money(obj.total)}*`);
-  lines.push(``);
-  lines.push(`*Customer Details:*`);
-  lines.push(`Name: ${obj.customer.name}`);
-  lines.push(`Phone: ${obj.customer.phone}`);
-  lines.push(`City: ${obj.customer.city}`);
-  lines.push(`Address: ${obj.customer.address}`);
-  if(obj.customer.notes) lines.push(`Notes: ${obj.customer.notes}`);
-  return lines.join('\n');
-}
+  blankRow() { return { name:'', category:'', price:'', blurb:'', image:'' }; }
 
-function openWhatsApp(text){
-  const url = `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(text)}`;
-  window.open(url, "_blank");
-}
-
-function clearCart(){ state.cart = []; persist(); renderCart(); }
-
-/* =========================
-   WIRING
-========================= */
-renderProducts();
-renderCart();
-
-if (PRODUCTS.length === 1) {
-    document.getElementById('productGrid').classList.add('single');
-}
-
-$("#openCart").addEventListener("click", ()=>{
-  const d = $("#cartDrawer");
-  d.classList.add("open");
-  d.setAttribute("aria-hidden","false");
-});
-
-$("#closeCart").addEventListener("click", ()=>{
-  const d = $("#cartDrawer");
-  d.classList.remove("open");
-  d.setAttribute("aria-hidden","true");
-});
-
-$("#checkoutForm").addEventListener("submit", (e)=>{
-  e.preventDefault();
-  if(state.cart.length===0){ 
-    alert("عربة التسوق فارغة | Your cart is empty."); 
-    return; 
+  setRow(i, patch) {
+    this.setState(s => ({ rows: s.rows.map((r, k) => k === i ? { ...r, ...patch } : r) }));
   }
 
-  const btn = document.getElementById("placeOrderBtn");
-  btn.textContent = "جاري فتح واتساب... | Opening WhatsApp...";
-  btn.disabled = true;
+  get supabase() {
+    if (!this.SUPABASE_URL || !this.SUPABASE_ANON || !window.supabase) return null;
+    if (!this._client) this._client = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_ANON);
+    return this._client;
+  }
 
-  const order = orderPayload(e.target);
-  const text  = encodeMultiline(order);
+  async fetchProducts() {
+    const c = this.supabase;
+    if (!c) return;
+    this.setState({ loading: true, remoteError: '' });
+    const { data, error } = await c.from('products').select('*').order('created_at', { ascending: false });
+    if (error) { this.setState({ loading: false, remoteError: error.message }); return; }
+    this.setState({ userProducts: (data || []).filter(Boolean), loading: false });
+  }
 
-  // Open WhatsApp with the order details
-  openWhatsApp(text);
+  componentDidMount() {
+    if (this.supabase) {
+      this.fetchProducts();
+    } else {
+      try {
+        const raw = localStorage.getItem('algae.market.products');
+        if (raw) this.setState({ userProducts: JSON.parse(raw) });
+      } catch (e) {}
+    }
+    try {
+      const auth = sessionStorage.getItem('algae.market.admin');
+      if (auth === '1') this.setState({ adminUnlocked: true });
+    } catch(e){}
+  }
 
-  // Provide confirmation feedback and clear the cart
-  const box = $("#confirmBox");
-  box.style.display='block';
-  box.innerHTML = "✅ جاري تحويلك إلى واتساب لإتمام الطلب!<br><span style='font-size:0.8em;'>Redirecting you to WhatsApp to complete your order!</span>";
-  
-  clearCart();
-  
-  setTimeout(() => {
-    btn.textContent = "اطلب الآن عبر واتساب | Order Now via WhatsApp";
-    btn.disabled = false;
-    $("#closeCart").click();
-    box.style.display='none';
-  }, 4000);
-});
+  seed() { return []; }
+
+  imageFor(p) { return p.image || ''; }
+
+  normalizeImage(u) {
+    u = (u || '').trim();
+    const m = u.match(/drive\.google\.com\/(?:open\?id=|file\/d\/|uc\?(?:export=\w+&)?id=)([\w-]+)/);
+    return m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w1200' : u;
+  }
+
+  allProducts() { return [...(this.state.userProducts || []), ...this.seed()].filter(Boolean); }
+
+  vendorGroups() {
+    const map = new Map();
+    for (const p of this.allProducts()) {
+      const key = (p.company || 'غير معروف').trim();
+      if (!map.has(key)) map.set(key, { company: key, vendor: p.vendor, phone: p.phone, origin: p.origin, tone: p.tone || 'var(--color-accent-2-500)', items: [] });
+      map.get(key).items.push(p);
+    }
+    return [...map.values()];
+  }
+
+  renderVals() {
+    const { page, filter, modal, detailId, vendorKey, userProducts, savedFlash, copied, adminUnlocked, loginError } = this.state;
+    const ar = this.state.lang !== 'en';
+    const T = {"navVendors":["الموردون","Vendors"],"navAdmin":["إضافة مورد","Add vendor"],"signOut":["تسجيل الخروج","Sign out"],"heroTitle":["الموردون","Vendors"],"heroSub":["كل الشركات المدرجة على algae.market. افتح أي شركة لترى منتجاتها.","Every company listed on algae.market. Open one to see its products."],"contact":["جهة الاتصال","Contact"],"listings":["المنتجات","Products"],"viewProducts":["عرض المنتجات","View products"],"contactBtn":["تواصل","Contact"],"allVendors":["→ كل الموردين","← All vendors"],"phone":["الهاتف","Phone"],"price":["السعر","Price"],"viewDetails":["عرض التفاصيل","View details"],"back":["→ رجوع","← Back"],"origin":["المنشأ","Origin"],"vendor":["المورد","Vendor"],"company":["الشركة","Company"],"about":["عن هذا المنتج","About this listing"],"contactVendorBtn":["تواصل مع المورد ←","Contact vendor →"],"restricted":["منطقة مقيدة · للمشرف فقط","Restricted · admin only"],"signIn":["تسجيل الدخول.","Sign in."],"signInSub":["صاحب الموقع فقط يمكنه نشر المنتجات. أدخل كلمة مرور المشرف للمتابعة.","Only the site owner can publish listings. Enter the admin password to continue."],"password":["كلمة المرور","Password"],"wrongPw":["كلمة المرور غير صحيحة. حاول مرة أخرى.","Incorrect password. Try again."],"unlock":["دخول لوحة المشرف ←","Unlock admin →"],"demoPw":["كلمة المرور التجريبية: ","Demo password: "],"adminKicker":["المشرف · إضافة الموردين","Admin · vendor intake"],"adminTitle":["إضافة مورد.","Add a vendor."],"adminSub":["أنشئ موردًا جديدًا وانشر منتجاته — أو أضف منتجات لمورد موجود بالفعل. هذه الصفحة لك وحدك، وكل ما تنشره يظهر فورًا للجميع.","Create a new vendor and publish what they sell — or add products to an existing vendor. Only you can reach this page; everything goes live immediately."],"connected":["متصل بـ Supabase — المنتجات الجديدة تظهر لكل الزوار.","Connected to Supabase — new listings publish to every visitor."],"notConnected":["Supabase غير متصل — المنتجات تُحفظ في متصفحك فقط.","Supabase not connected — listings only save to your browser."],"sec1":["٠١ — المورد","01 — Vendor"],"existing":["مورد موجود","Existing vendor"],"newV":["مورد جديد","New vendor"],"chooseV":["اختر المورد","Choose vendor"],"companyName":["اسم الشركة","Company name"],"contactName":["اسم المسؤول","Contact name"],"phoneLabel":["رقم الهاتف (يظهر في نافذة التواصل)","Phone (shown in contact popup)"],"originLabel":["الدولة / المنشأ","Country / origin"],"sec2":["٠٢ — المنتجات","02 — Products"],"sec2Sub":["أضف كل المنتجات التي يبيعها هذا المورد — استخدم «إضافة منتج آخر» لكل منتج إضافي.","Add every product this vendor sells — use “Add another product” for each extra one."],"remove":["حذف","Remove"],"productName":["اسم المنتج","Product name"],"category":["الفئة","Category"],"shortDesc":["وصف قصير","Short description"],"photoLink":["رابط الصورة (اختياري)","Photo link (optional)"],"driveNote":["روابط Google Drive تعمل إذا كان الملف مشاركًا مع «أي شخص لديه الرابط».","Google Drive links work if the file is shared as “Anyone with the link”."],"addRow":["+ إضافة منتج آخر","+ Add another product"],"published":["✓ تم النشر — ظاهر الآن في صفحة المورد.","✓ Published — live on the vendor page."],"jsonTitle":["منتجاتك — JSON","Your listings — JSON"],"clearAll":["حذف الكل","Clear all"],"jsonSub":["كل المنتجات المنشورة في قاعدة البيانات، بصيغة JSON للنسخ الاحتياطي.","Every listing in the database, as JSON for backup."],"footer":["algae.market — دليل للموردين، وليس متجرًا","algae.market — a vendor directory, not a store"],"adminLink":["المشرف","Admin"],"contactVendor":["تواصل مع المورد","Contact vendor"],"vendorName":["اسم المورد","Vendor name"],"productsFrom":["منتجات","Products from"],"product":["منتج","Product"],"call":["اتصل بـ","Call"],"fwd":["←","→"],"sbError":["خطأ من Supabase:","Supabase error:"],"setup1":["للنشر لكل الزوار: افتح ملف","To publish to every visitor, open"],"setup2":["وضع قيم","and set"],"phCompany":["مثال: ايكيوبد","e.g. Verde Alga Coop."],"phContact":["مثال: أحمد محمد","e.g. Nora Alvarez"],"phOrigin":["مثال: القاهرة، مصر","e.g. Cairo, Egypt"],"phName":["مثال: بودرة سبيرولينا، درجة غذائية","e.g. Spirulina powder, food grade"],"phCat":["مثال: بودرة، مستخلص، كتلة حيوية طازجة","e.g. Powder, Extract, Fresh biomass"],"phPrice":["مثال: ٢٠٠٠ ج.م / كيلو جرام","e.g. 2000 EGP / kg"],"phDesc":["سطران: ما هو المنتج وما الذي يميزه.","Two lines: what it is and what makes it different."],"phPhoto":["https://… أو assets/photo.webp","https://… or assets/photo.webp"],"close":["إغلاق","Close"]};
+    const t = {}; for (const k in T) t[k] = T[k][ar ? 0 : 1];
+    const openVendor = (key) => { this.setState({ page: 'vendor', vendorKey: key }); window.scrollTo(0,0); };
+    const products = this.allProducts();
+    const cats = ['All','Spirulina powder','Chlorella powder'];
+    const visible = filter === 'All' ? products : products.filter(p => p.category === filter);
+
+    const categoryChips = cats.map(c => ({
+      label: c,
+      active: c === filter,
+      onClick: () => this.setState({ filter: c }),
+    }));
+
+    const decorate = (p) => (p = p || {}, {
+      ...p,
+      tone: p.tone || 'var(--color-accent-2-500)',
+      imageLabel: `${ar ? 'صورة المنتج' : 'product shot'} — ${p.category || ''}`,
+      image: this.imageFor(p),
+      hasImage: !!this.imageFor(p),
+      noImage: !this.imageFor(p),
+      onContact: () => this.setState({ modal: p }),
+      onView: () => { this.setState({ page: 'detail', detailId: p.id }); window.scrollTo(0,0); },
+      onVendor: () => openVendor((p.company || 'غير معروف').trim()),
+    });
+
+    const groups = this.vendorGroups();
+    const vendorList = groups.map(g => ({
+      company: g.company, vendor: g.vendor, origin: g.origin, tone: g.tone,
+      count: g.items.length,
+      cats: [...new Set(g.items.map(i => i.category))],
+      onOpen: () => openVendor(g.company),
+      onContact: () => this.setState({ modal: g.items[0] }),
+    }));
+    const activeGroup = groups.find(g => g.company === vendorKey) || groups[0] || { company:'', vendor:'', phone:'', origin:'', tone:'var(--color-accent-2-500)', items:[] };
+    const vendor = {
+      company: activeGroup.company, vendor: activeGroup.vendor, phone: activeGroup.phone,
+      origin: activeGroup.origin, tone: activeGroup.tone, count: activeGroup.items.length,
+      tel: 'tel:' + (activeGroup.phone || '').replace(/\s/g,''),
+    };
+
+    const visibleProducts = visible.map(decorate);
+    const detailProduct = decorate(products.find(p => p.id === detailId) || products[0] || {});
+    const detail = { ...detailProduct, longBlurb: (detailProduct.blurb || '') + (ar ? ' تواصل مع المورد مباشرة للحصول على المواصفات الكاملة والحد الأدنى للطلب ومستندات التصدير. algae.market لا يتوسط في البيع — التعامل مباشر بين المنتج والمشتري.' : ' Contact the vendor directly for full specs, minimum order quantities and export documents. algae.market does not intermediate — you deal grower-to-buyer.') };
+
+    const userProductsJson = JSON.stringify(userProducts, null, 2);
+
+    return {
+      // nav
+      isDetail: page === 'detail',
+      t, dir: ar ? 'rtl' : 'ltr', lang: ar ? 'ar' : 'en', inputAlign: ar ? 'right' : 'left',
+      langLabel: ar ? 'English' : 'العربية',
+      toggleLang: () => { const l = ar ? 'en' : 'ar'; try { localStorage.setItem('algae.market.lang', l); } catch (e) {} this.setState({ lang: l }); },
+      isVendors: page === 'vendors',
+      isVendor: page === 'vendor',
+      vendorList,
+      vendor,
+      vendorProducts: activeGroup.items.map(decorate),
+      goVendors: () => { this.setState({ page: 'vendors', vendorKey: null }); window.scrollTo(0,0); },
+      vendorsCurrent: (page === 'vendors' || page === 'vendor') ? 'page' : 'false',
+      isAdmin: page === 'admin' && adminUnlocked,
+      isLogin: page === 'admin' && !adminUnlocked,
+      isAdminUnlocked: adminUnlocked,
+      goMarket: () => { this.setState({ page: 'vendors', detailId: null, vendorKey: null }); window.scrollTo(0,0); },
+      goAdmin:  () => this.setState({ page: 'admin', savedFlash: false, loginError: false }),
+      adminCurrent:  page === 'admin'  ? 'page' : 'false',
+      loginError,
+      onLogin: (e) => {
+        e.preventDefault();
+        const pw = e.target.password.value;
+        if (pw === this.ADMIN_PASSWORD) {
+          try { sessionStorage.setItem('algae.market.admin', '1'); } catch(e){}
+          this.setState({ adminUnlocked: true, loginError: false });
+        } else {
+          this.setState({ loginError: true });
+        }
+      },
+      onLogout: () => {
+        try { sessionStorage.removeItem('algae.market.admin'); } catch(e){}
+        this.setState({ adminUnlocked: false, page: 'vendors' });
+      },
+
+      // marketplace
+      categories: categoryChips,
+      visibleProducts,
+      hasProducts: visible.length > 0,
+      noProducts: visible.length === 0,
+      vendorCount: new Set(products.map(p => p.company)).size,
+      productCount: products.length,
+
+      // detail
+      detail,
+
+      // admin
+      savedFlash,
+      notSaved: !savedFlash,
+      hasUserProducts: userProducts.length > 0,
+      userProductsJson,
+      copyLabel: copied ? (ar ? '✓ تم النسخ' : '✓ Copied') : (ar ? 'نسخ JSON' : 'Copy JSON'),
+      onCopyJson: () => {
+        try {
+          navigator.clipboard.writeText(userProductsJson);
+          this.setState({ copied: true });
+          setTimeout(() => this.setState({ copied: false }), 1600);
+        } catch(e) {}
+      },
+      onClearProducts: async () => {
+        const c = this.supabase;
+        if (c) {
+          if (!confirm((ar ? 'حذف كل المنتجات من قاعدة البيانات؟ لا يمكن التراجع عن ذلك.' : 'Delete ALL listings from the database? This cannot be undone.'))) return;
+          await c.from('products').delete().neq('id', '');
+          await this.fetchProducts();
+        } else {
+          try { localStorage.removeItem('algae.market.products'); } catch(e) {}
+          this.setState({ userProducts: [] });
+        }
+      },
+      isConfigured: !!this.supabase,
+      notConfigured: !this.supabase,
+      saveHint: this.supabase ? (ar ? 'يُنشر على Supabase — يظهر لكل الزوار فورًا.' : 'Publishes to Supabase — visible to every visitor immediately.') : (ar ? 'يُحفظ في هذا المتصفح فقط (لا يوجد اتصال بقاعدة البيانات).' : 'Saved in this browser only (no database connected).'),
+      remoteError: this.state.remoteError,
+      hasRemoteError: !!this.state.remoteError,
+      // vendor mode
+      newVendorMode: this.state.vendorMode === 'new',
+      existingMode: this.state.vendorMode === 'existing' && groups.length > 0,
+      onPickNew: () => this.setState({ vendorMode: 'new', formError: '', savedFlash: false }),
+      onPickExisting: () => this.setState({ vendorMode: 'existing', formError: '', savedFlash: false, selectedVendor: this.state.selectedVendor || (groups[0] && groups[0].company) || '' }),
+      selectedVendor: this.state.selectedVendor || (groups[0] && groups[0].company) || '',
+      onSelectVendor: (e) => this.setState({ selectedVendor: e.target.value }),
+      vendorOptions: groups.map(g => ({ company: g.company, label: g.company + ' — ' + g.vendor })),
+
+      // product rows
+      productRows: this.state.rows.map((r, i) => ({
+        ...r, num: i + 1, removable: this.state.rows.length > 1,
+        onRemove: () => this.setState(s => ({ rows: s.rows.filter((_, k) => k !== i) })),
+        setName: (e) => this.setRow(i, { name: e.target.value }),
+        setCategory: (e) => this.setRow(i, { category: e.target.value }),
+        setPrice: (e) => this.setRow(i, { price: e.target.value }),
+        setBlurb: (e) => this.setRow(i, { blurb: e.target.value }),
+        setImage: (e) => this.setRow(i, { image: e.target.value }),
+      })),
+      categoryOptions: [...new Set([...products.map(p => p.category).filter(Boolean), 'بودرة', 'مستخلص', 'كتلة حيوية طازجة', 'أقراص وكبسولات', 'سائل'])],
+      onAddRow: () => this.setState(s => ({ rows: [...s.rows, this.blankRow()], savedFlash: false })),
+      formError: this.state.formError,
+      submitLabel: this.state.rows.length > 1 ? (ar ? `نشر ${this.state.rows.length} منتجات ←` : `Publish ${this.state.rows.length} products →`) : (ar ? 'نشر ←' : 'Publish →'),
+
+      onSubmit: async (e) => {
+        e.preventDefault();
+        const f = e.target;
+        const mode = this.state.vendorMode;
+        let v;
+        if (mode === 'existing' && groups.length) {
+          const key = this.state.selectedVendor || groups[0].company;
+          const g = groups.find(x => x.company === key) || groups[0];
+          v = { company: g.company, vendor: g.vendor, phone: g.phone, origin: g.origin };
+        } else {
+          v = {
+            company: (f.company?.value || '').trim(),
+            vendor: (f.vendorName?.value || '').trim(),
+            phone: (f.phone?.value || '').trim(),
+            origin: (f.origin?.value || '').trim(),
+          };
+          if (!v.company || !v.vendor || !v.phone || !v.origin) {
+            this.setState({ formError: (ar ? 'املأ بيانات المورد الأربعة كاملة.' : 'Fill in all four vendor fields.') }); return;
+          }
+        }
+        const rows = this.state.rows.filter(r => r.name.trim() && r.price.trim());
+        if (!rows.length) { this.setState({ formError: (ar ? 'أضف منتجًا واحدًا على الأقل باسم وسعر.' : 'Add at least one product with a name and a price.') }); return; }
+
+        const tones = ['var(--color-accent-2-500)','var(--color-accent-500)','var(--color-accent-2-600)','var(--color-accent-400)'];
+        const recs = rows.map((r, i) => ({
+          id: 'u' + Date.now() + '-' + i,
+          name: r.name.trim(), category: (r.category || '').trim(), price: r.price.trim(), blurb: r.blurb.trim(),
+          image: this.normalizeImage(r.image),
+          vendor: v.vendor, company: v.company, phone: v.phone, origin: v.origin,
+          tone: tones[i % tones.length],
+        }));
+
+        const c = this.supabase;
+        if (c) {
+          const { error } = await c.from('products').insert(recs);
+          if (error) { this.setState({ remoteError: error.message }); return; }
+          await this.fetchProducts();
+        } else {
+          const next = [...recs, ...userProducts];
+          try { localStorage.setItem('algae.market.products', JSON.stringify(next)); } catch (e) {}
+          this.setState({ userProducts: next });
+        }
+        this.setState({ savedFlash: true, formError: '', rows: [this.blankRow()], selectedVendor: v.company });
+        if (f.company) f.company.value = '';
+        if (f.vendorName) f.vendorName.value = '';
+        if (f.phone) f.phone.value = '';
+        if (f.origin) f.origin.value = '';
+      },
+
+      // modal
+      modalOpen: !!modal,
+      closeModal: () => this.setState({ modal: null }),
+      stopProp: (e) => e.stopPropagation(),
+      modalVendor: modal?.vendor || '',
+      modalCompany: modal?.company || '',
+      modalPhone: modal?.phone || '',
+      modalTel: modal ? 'tel:' + (modal.phone||'').replace(/\s/g,'') : '#',
+    };
+  }
+}
 </script>
 </body>
 </html>
