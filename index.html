@@ -242,7 +242,7 @@
         </sc-if>
         <button type="submit" class="btn btn-primary" style="padding:14px 20px; margin-top:var(--space-2);">{{ t.unlock }}</button>
         <button type="button" class="btn btn-ghost" onClick="{{ goMarket }}" style="margin-top:var(--space-1);">{{ t.back }}</button>
-        <p class="text-muted" style="font-size:16px; margin-top:var(--space-4);">{{ t.demoPw }}<strong>algae</strong></p>
+        
       </form>
     </section>
   </sc-if>
@@ -439,7 +439,7 @@ class Component extends DCLogic {
   // 3) Paste your Project URL + anon public key below:
   SUPABASE_URL = 'https://xurabhlobkoagwnqnyey.supabase.co';
   SUPABASE_ANON = 'sb_publishable_DF0ICPjgpjzBZozw9syGiQ_SKwnxxJd';
-  ADMIN_PASSWORD = 'algae';
+  ADMIN_HASH = '326e9bb29326ba435f3164136b691d93e3d4891451fa4b1a50e02f7c68d01850';
 
   state = {
     page: 'vendors',
@@ -591,12 +591,15 @@ class Component extends DCLogic {
       onLogin: (e) => {
         e.preventDefault();
         const pw = e.target.password.value;
-        if (pw === this.ADMIN_PASSWORD) {
-          try { sessionStorage.setItem('algae.market.admin', '1'); } catch(e){}
-          this.setState({ adminUnlocked: true, loginError: false });
-        } else {
-          this.setState({ loginError: true });
-        }
+        crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw)).then(buf => {
+          const h = [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, '0')).join('');
+          if (h === this.ADMIN_HASH) {
+            try { sessionStorage.setItem('algae.market.admin', '1'); } catch(e){}
+            this.setState({ adminUnlocked: true, loginError: false });
+          } else {
+            this.setState({ loginError: true });
+          }
+        });
       },
       onLogout: () => {
         try { sessionStorage.removeItem('algae.market.admin'); } catch(e){}
