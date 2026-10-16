@@ -114,7 +114,8 @@
         <sc-for list="{{ vendorList }}" as="v" hint-placeholder-count="6">
           <article class="card elev-sm" style="background:var(--color-neutral-100); border-radius:var(--radius-lg); padding:var(--space-6); display:flex; flex-direction:column; gap:var(--space-3);">
             <div style="display:flex; align-items:center; gap:14px;">
-              <span class="am-blob" style="width:52px; height:52px; flex:none; background:radial-gradient(circle at 32% 32%, color-mix(in srgb, {{ v.tone }} 45%, var(--color-neutral-100)), {{ v.tone }} 75%); box-shadow: inset -3px -4px 7px color-mix(in srgb, var(--color-neutral-900) 22%, transparent);"></span>
+              <sc-if value="{{ v.hasLogo }}" hint-placeholder-val="{{ false }}"><img src="{{ v.logo }}" alt="{{ v.company }}" style="width:52px; height:52px; flex:none; object-fit:contain; border-radius:999px; background:#fff; padding:6px; box-sizing:border-box;"></sc-if>
+              <sc-if value="{{ v.noLogo }}" hint-placeholder-val="{{ true }}"><span class="am-blob" style="width:52px; height:52px; flex:none; background:radial-gradient(circle at 32% 32%, color-mix(in srgb, {{ v.tone }} 45%, var(--color-neutral-100)), {{ v.tone }} 75%); box-shadow: inset -3px -4px 7px color-mix(in srgb, var(--color-neutral-900) 22%, transparent);"></span></sc-if>
               <div>
                 <h3 style="margin:0; line-height:1.1;">{{ v.company }}</h3>
                 <span class="am-label-mono">{{ v.origin }}</span>
@@ -149,7 +150,8 @@
     <section class="am-detail" style="max-width:1240px; margin:0 auto; padding:40px 40px 96px;">
       <button class="btn btn-ghost" onClick="{{ goVendors }}" style="margin-bottom:var(--space-6);">{{ t.allVendors }}</button>
       <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
-        <span class="am-blob" style="width:84px; height:84px; flex:none; background:radial-gradient(circle at 32% 32%, color-mix(in srgb, {{ vendor.tone }} 45%, var(--color-neutral-100)), {{ vendor.tone }} 75%); box-shadow: inset -4px -6px 10px color-mix(in srgb, var(--color-neutral-900) 22%, transparent);"></span>
+        <sc-if value="{{ vendor.hasLogo }}" hint-placeholder-val="{{ false }}"><img src="{{ vendor.logo }}" alt="{{ vendor.company }}" style="width:84px; height:84px; flex:none; object-fit:contain; border-radius:999px; background:#fff; padding:10px; box-sizing:border-box;"></sc-if>
+        <sc-if value="{{ vendor.noLogo }}" hint-placeholder-val="{{ true }}"><span class="am-blob" style="width:84px; height:84px; flex:none; background:radial-gradient(circle at 32% 32%, color-mix(in srgb, {{ vendor.tone }} 45%, var(--color-neutral-100)), {{ vendor.tone }} 75%); box-shadow: inset -4px -6px 10px color-mix(in srgb, var(--color-neutral-900) 22%, transparent);"></span></sc-if>
         <div>
           <h6 class="am-kicker" style="color:var(--color-accent-700); margin-bottom:8px;">{{ vendor.origin }}</h6>
           <h1 class="am-detail-title" style="font-size:79px; line-height:1; margin:0; letter-spacing:-0.02em;">{{ vendor.company }}</h1>
@@ -501,6 +503,8 @@ class Component extends DCLogic {
 
   imageFor(p) { return p.image || ''; }
 
+  logoFor(company) { const c = (company || '').replace(/\s/g, ''); return /ايكيوب|ايكوب|ecubed/i.test(c) ? 'assets/ecubed-logo.png' : ''; }
+
   normalizeImage(u) {
     u = (u || '').trim();
     const m = u.match(/drive\.google\.com\/(?:open\?id=|file\/d\/|uc\?(?:export=\w+&)?id=)([\w-]+)/);
@@ -550,6 +554,7 @@ class Component extends DCLogic {
     const groups = this.vendorGroups();
     const vendorList = groups.map(g => ({
       company: g.company, vendor: g.vendor, origin: g.origin, tone: g.tone,
+      logo: this.logoFor(g.company), hasLogo: !!this.logoFor(g.company), noLogo: !this.logoFor(g.company),
       count: g.items.length,
       cats: [...new Set(g.items.map(i => i.category))],
       onOpen: () => openVendor(g.company),
@@ -559,6 +564,7 @@ class Component extends DCLogic {
     const vendor = {
       company: activeGroup.company, vendor: activeGroup.vendor, phone: activeGroup.phone,
       origin: activeGroup.origin, tone: activeGroup.tone, count: activeGroup.items.length,
+      logo: this.logoFor(activeGroup.company), hasLogo: !!this.logoFor(activeGroup.company), noLogo: !this.logoFor(activeGroup.company),
       tel: 'tel:' + (activeGroup.phone || '').replace(/\s/g,''),
     };
 
