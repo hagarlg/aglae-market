@@ -180,10 +180,14 @@
                 <span class="am-label-mono">{{ p.origin }}</span>
               </div>
               <h3 style="margin:0;">{{ p.name }}</h3>
-              <p style="color:var(--color-neutral-700); margin:0;">{{ p.blurb }}</p>
-              <div style="display:flex; justify-content:space-between; align-items:end; margin-top:auto; padding-top:var(--space-3); border-top:1px solid var(--color-divider);">
-                <h6 style="color:var(--color-neutral-700); margin:0;">{{ t.price }}</h6>
-                <div style="font-family:var(--font-heading); font-size:29px;">{{ p.price }}</div>
+              <div style="display:flex; flex-direction:column; margin-top:auto; padding-top:var(--space-3); border-top:1px solid var(--color-divider);">
+                <div style="display:flex; justify-content:space-between; align-items:end;">
+                  <h6 style="color:var(--color-neutral-700); margin:0;">{{ t.price }}</h6>
+                  <div style="font-family:var(--font-heading); font-size:29px;">{{ p.priceLine }}</div>
+                </div>
+                <sc-if value="{{ p.hasPriceNote }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:15px; color:var(--color-neutral-600); margin-top:4px; text-align:end;">{{ p.price_note }}</div>
+                </sc-if>
               </div>
               <div class="am-card-actions" style="display:flex; gap:8px; margin-top:var(--space-3);">
                 <button class="btn btn-ghost" onClick="{{ p.onView }}" style="flex:1;">{{ t.viewDetails }}</button>
@@ -210,20 +214,22 @@
         </div>
         <div>
           <span class="tag tag-accent-2" style="margin-bottom:var(--space-3); display:inline-block;">{{ detail.category }}</span>
-          <h1 class="am-detail-title" style="font-size:85px; line-height:1; margin:0 0 var(--space-3); letter-spacing:-0.02em;">{{ detail.name }}</h1>
-          <p style="font-size:24px; color:var(--color-neutral-700); margin:0 0 var(--space-6);">{{ detail.blurb }}</p>
+          <h1 class="am-detail-title" style="font-size:85px; line-height:1; margin:0 0 var(--space-6); letter-spacing:-0.02em;">{{ detail.name }}</h1>
 
           <div class="am-detail-stats" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); background:var(--color-surface); border-radius:var(--radius-lg); padding:var(--space-6);">
-            <div><h6 style="color:var(--color-neutral-700);">{{ t.price }}</h6><div style="font-family:var(--font-heading); font-size:37px;">{{ detail.price }}</div></div>
+            <div>
+              <h6 style="color:var(--color-neutral-700);">{{ t.price }}</h6>
+              <div style="font-family:var(--font-heading); font-size:37px;">{{ detail.priceLine }}</div>
+              <sc-if value="{{ detail.hasPriceNote }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:16px; color:var(--color-neutral-600); margin-top:4px;">{{ detail.price_note }}</div>
+              </sc-if>
+            </div>
             <div><h6 style="color:var(--color-neutral-700);">{{ t.origin }}</h6><div style="font-family:var(--font-heading); font-size:29px;">{{ detail.origin }}</div></div>
             <div><h6 style="color:var(--color-neutral-700);">{{ t.vendor }}</h6><div style="font-size:23px; font-weight:600;">{{ detail.vendor }}</div></div>
             <div><h6 style="color:var(--color-neutral-700);">{{ t.company }}</h6><button onClick="{{ detail.onVendor }}" style="background:transparent; border:none; padding:0; cursor:pointer; font-family:var(--font-body); font-size:23px; font-weight:600; color:var(--color-accent-700); text-align:start; text-decoration:underline; text-underline-offset:3px;">{{ detail.company }}</button></div>
           </div>
 
-          <h4 style="margin:var(--space-6) 0 var(--space-3);">{{ t.about }}</h4>
-          <p style="color:var(--color-neutral-700);">{{ detail.longBlurb }}</p>
-
-          <button class="btn btn-primary" onClick="{{ detail.onContact }}" style="margin-top:var(--space-4); padding:16px 28px; font-size:21px;">{{ t.contactVendorBtn }}</button>
+          <button class="btn btn-primary" onClick="{{ detail.onContact }}" style="margin-top:var(--space-6); padding:16px 28px; font-size:21px;">{{ t.contactVendorBtn }}</button>
         </div>
       </div>
     </section>
@@ -339,13 +345,38 @@
                 </sc-for>
               </datalist>
             </label>
-            <label style="display:flex; flex-direction:column; gap:6px;">
-              <span style="font-size:17px; font-weight:600;">{{ t.price }}</span>
-              <input class="am-input" value="{{ row.price }}" onChange="{{ row.setPrice }}" placeholder="{{ t.phPrice }}">
-            </label>
+            <div style="grid-column:1 / -1; display:grid; grid-template-columns: 1.3fr 0.8fr 1.3fr 0.8fr; gap:12px;">
+              <label style="display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:17px; font-weight:600;">{{ t.priceAmount }}</span>
+                <input class="am-input" value="{{ row.price_amount }}" onChange="{{ row.setPriceAmount }}" type="number" step="0.01" placeholder="250">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:17px; font-weight:600;">{{ t.priceCurrency }}</span>
+                <select class="am-select" value="{{ row.price_currency }}" onChange="{{ row.setPriceCurrency }}">
+                  <option value="EGP">EGP</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </label>
+              <label style="display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:17px; font-weight:600;">{{ t.pricePerAmount }}</span>
+                <input class="am-input" value="{{ row.price_per_amount }}" onChange="{{ row.setPricePerAmount }}" type="number" step="0.01" placeholder="100">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:17px; font-weight:600;">{{ t.pricePerUnit }}</span>
+                <select class="am-select" value="{{ row.price_per_unit }}" onChange="{{ row.setPricePerUnit }}">
+                  <option value="g">g</option>
+                  <option value="kg">kg</option>
+                  <option value="L">L</option>
+                  <option value="ml">ml</option>
+                  <option value="capsule">capsule</option>
+                  <option value="tablet">tablet</option>
+                </select>
+              </label>
+            </div>
             <label style="grid-column:1 / -1; display:flex; flex-direction:column; gap:6px;">
-              <span style="font-size:17px; font-weight:600;">{{ t.shortDesc }}</span>
-              <textarea class="am-textarea" rows="2" value="{{ row.blurb }}" onChange="{{ row.setBlurb }}" placeholder="{{ t.phDesc }}"></textarea>
+              <span style="font-size:17px; font-weight:600;">{{ t.priceNote }}</span>
+              <input class="am-input" value="{{ row.price_note }}" onChange="{{ row.setPriceNote }}" placeholder="{{ t.phPriceNote }}">
             </label>
             <label style="grid-column:1 / -1; display:flex; flex-direction:column; gap:6px;">
               <span style="font-size:17px; font-weight:600;">{{ t.photoLink }}</span>
@@ -431,9 +462,12 @@ class Component extends DCLogic {
   // 1) Create a free project at https://supabase.com
   // 2) SQL editor, run:
   //      create table products (
-  //        id text primary key, name text, category text, price text,
-  //        blurb text, vendor text, company text, phone text,
-  //        origin text, tone text, created_at timestamptz default now()
+  //        id text primary key, name text, category text,
+  //        price_amount numeric, price_currency text,
+  //        price_per_amount numeric, price_per_unit text, price_note text,
+  //        vendor text, company text, phone text,
+  //        origin text, tone text, image text,
+  //        created_at timestamptz default now()
   //      );
   //      alter table products enable row level security;
   //      create policy "public read"   on products for select using (true);
@@ -460,10 +494,10 @@ class Component extends DCLogic {
     vendorMode: 'new',
     selectedVendor: '',
     formError: '',
-    rows: [{ name:'', category:'', price:'', blurb:'', image:'' }],
+    rows: [{ name:'', category:'', price_amount:'', price_currency:'EGP', price_per_amount:'', price_per_unit:'g', price_note:'', image:'' }],
   };
 
-  blankRow() { return { name:'', category:'', price:'', blurb:'', image:'' }; }
+  blankRow() { return { name:'', category:'', price_amount:'', price_currency:'EGP', price_per_amount:'', price_per_unit:'g', price_note:'', image:'' }; }
 
   setRow(i, patch) {
     this.setState(s => ({ rows: s.rows.map((r, k) => k === i ? { ...r, ...patch } : r) }));
@@ -511,6 +545,32 @@ class Component extends DCLogic {
     return m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w1200' : u;
   }
 
+  toArabicDigits(n) {
+    return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]);
+  }
+
+  formatPrice(p, ar) {
+    if (p.price_amount == null || p.price_amount === '') return '';
+    const curMap = { EGP: ar ? 'ج.م' : 'EGP', USD: '$', EUR: '€' };
+    const unitMap = {
+      g: ar ? 'جرام' : 'g',
+      kg: ar ? 'كجم' : 'kg',
+      L: ar ? 'لتر' : 'L',
+      ml: ar ? 'مل' : 'ml',
+      capsule: ar ? 'كبسولة' : 'capsule',
+      tablet: ar ? 'قرص' : 'tablet',
+    };
+    const amt = ar ? this.toArabicDigits(p.price_amount) : p.price_amount;
+    const cur = curMap[p.price_currency] || p.price_currency || '';
+    let s = amt + (cur ? ' ' + cur : '');
+    if (p.price_per_amount != null && p.price_per_amount !== '') {
+      const pa = ar ? this.toArabicDigits(p.price_per_amount) : p.price_per_amount;
+      const pu = unitMap[p.price_per_unit] || p.price_per_unit || '';
+      s += ' / ' + pa + (pu ? ' ' + pu : '');
+    }
+    return s;
+  }
+
   allProducts() { return [...(this.state.userProducts || []), ...this.seed()].filter(Boolean); }
 
   vendorGroups() {
@@ -526,7 +586,7 @@ class Component extends DCLogic {
   renderVals() {
     const { page, filter, modal, detailId, vendorKey, userProducts, savedFlash, copied, adminUnlocked, loginError } = this.state;
     const ar = this.state.lang !== 'en';
-    const T = {"navVendors":["الموردون","Vendors"],"navAdmin":["إضافة مورد","Add vendor"],"signOut":["تسجيل الخروج","Sign out"],"heroTitle":["الموردون","Vendors"],"heroSub":["كل الشركات المدرجة على algae.market. افتح أي شركة لترى منتجاتها.","Every company listed on algae.market. Open one to see its products."],"contact":["جهة الاتصال","Contact"],"listings":["المنتجات","Products"],"viewProducts":["عرض المنتجات","View products"],"contactBtn":["تواصل","Contact"],"allVendors":["→ كل الموردين","← All vendors"],"phone":["الهاتف","Phone"],"price":["السعر","Price"],"viewDetails":["عرض التفاصيل","View details"],"back":["→ رجوع","← Back"],"origin":["المنشأ","Origin"],"vendor":["المورد","Vendor"],"company":["الشركة","Company"],"about":["عن هذا المنتج","About this listing"],"contactVendorBtn":["تواصل مع المورد ←","Contact vendor →"],"restricted":["منطقة مقيدة · للمشرف فقط","Restricted · admin only"],"signIn":["تسجيل الدخول.","Sign in."],"signInSub":["صاحب الموقع فقط يمكنه نشر المنتجات. أدخل كلمة مرور المشرف للمتابعة.","Only the site owner can publish listings. Enter the admin password to continue."],"password":["كلمة المرور","Password"],"wrongPw":["كلمة المرور غير صحيحة. حاول مرة أخرى.","Incorrect password. Try again."],"unlock":["دخول لوحة المشرف ←","Unlock admin →"],"demoPw":["كلمة المرور التجريبية: ","Demo password: "],"adminKicker":["المشرف · إضافة الموردين","Admin · vendor intake"],"adminTitle":["إضافة مورد.","Add a vendor."],"adminSub":["أنشئ موردًا جديدًا وانشر منتجاته — أو أضف منتجات لمورد موجود بالفعل. هذه الصفحة لك وحدك، وكل ما تنشره يظهر فورًا للجميع.","Create a new vendor and publish what they sell — or add products to an existing vendor. Only you can reach this page; everything goes live immediately."],"connected":["متصل بـ Supabase — المنتجات الجديدة تظهر لكل الزوار.","Connected to Supabase — new listings publish to every visitor."],"notConnected":["Supabase غير متصل — المنتجات تُحفظ في متصفحك فقط.","Supabase not connected — listings only save to your browser."],"sec1":["٠١ — المورد","01 — Vendor"],"existing":["مورد موجود","Existing vendor"],"newV":["مورد جديد","New vendor"],"chooseV":["اختر المورد","Choose vendor"],"companyName":["اسم الشركة","Company name"],"contactName":["اسم المسؤول","Contact name"],"phoneLabel":["رقم الهاتف (يظهر في نافذة التواصل)","Phone (shown in contact popup)"],"originLabel":["الدولة / المنشأ","Country / origin"],"sec2":["٠٢ — المنتجات","02 — Products"],"sec2Sub":["أضف كل المنتجات التي يبيعها هذا المورد — استخدم «إضافة منتج آخر» لكل منتج إضافي.","Add every product this vendor sells — use “Add another product” for each extra one."],"remove":["حذف","Remove"],"productName":["اسم المنتج","Product name"],"category":["الفئة","Category"],"shortDesc":["وصف قصير","Short description"],"photoLink":["رابط الصورة (اختياري)","Photo link (optional)"],"driveNote":["روابط Google Drive تعمل إذا كان الملف مشاركًا مع «أي شخص لديه الرابط».","Google Drive links work if the file is shared as “Anyone with the link”."],"addRow":["+ إضافة منتج آخر","+ Add another product"],"published":["✓ تم النشر — ظاهر الآن في صفحة المورد.","✓ Published — live on the vendor page."],"jsonTitle":["منتجاتك — JSON","Your listings — JSON"],"clearAll":["حذف الكل","Clear all"],"jsonSub":["كل المنتجات المنشورة في قاعدة البيانات، بصيغة JSON للنسخ الاحتياطي.","Every listing in the database, as JSON for backup."],"footer":["algae.market — دليل للموردين، وليس متجرًا","algae.market — a vendor directory, not a store"],"adminLink":["المشرف","Admin"],"contactVendor":["تواصل مع المورد","Contact vendor"],"vendorName":["اسم المورد","Vendor name"],"productsFrom":["منتجات","Products from"],"product":["منتج","Product"],"call":["اتصل بـ","Call"],"fwd":["←","→"],"sbError":["خطأ من Supabase:","Supabase error:"],"setup1":["للنشر لكل الزوار: افتح ملف","To publish to every visitor, open"],"setup2":["وضع قيم","and set"],"phCompany":["مثال: ايكيوبد","e.g. Verde Alga Coop."],"phContact":["مثال: أحمد محمد","e.g. Nora Alvarez"],"phOrigin":["مثال: القاهرة، مصر","e.g. Cairo, Egypt"],"phName":["مثال: بودرة سبيرولينا، درجة غذائية","e.g. Spirulina powder, food grade"],"phCat":["مثال: بودرة، مستخلص، كتلة حيوية طازجة","e.g. Powder, Extract, Fresh biomass"],"phPrice":["مثال: ٢٠٠٠ ج.م / كيلو جرام","e.g. 2000 EGP / kg"],"phDesc":["سطران: ما هو المنتج وما الذي يميزه.","Two lines: what it is and what makes it different."],"phPhoto":["https://… أو assets/photo.webp","https://… or assets/photo.webp"],"close":["إغلاق","Close"]};
+    const T = {"navVendors":["الموردون","Vendors"],"navAdmin":["إضافة مورد","Add vendor"],"signOut":["تسجيل الخروج","Sign out"],"heroTitle":["الموردون","Vendors"],"heroSub":["كل الشركات المدرجة على algae.market. افتح أي شركة لترى منتجاتها.","Every company listed on algae.market. Open one to see its products."],"contact":["جهة الاتصال","Contact"],"listings":["المنتجات","Products"],"viewProducts":["عرض المنتجات","View products"],"contactBtn":["تواصل","Contact"],"allVendors":["→ كل الموردين","← All vendors"],"phone":["الهاتف","Phone"],"price":["السعر","Price"],"viewDetails":["عرض التفاصيل","View details"],"back":["→ رجوع","← Back"],"origin":["المنشأ","Origin"],"vendor":["المورد","Vendor"],"company":["الشركة","Company"],"contactVendorBtn":["تواصل مع المورد ←","Contact vendor →"],"restricted":["منطقة مقيدة · للمشرف فقط","Restricted · admin only"],"signIn":["تسجيل الدخول.","Sign in."],"signInSub":["صاحب الموقع فقط يمكنه نشر المنتجات. أدخل كلمة مرور المشرف للمتابعة.","Only the site owner can publish listings. Enter the admin password to continue."],"password":["كلمة المرور","Password"],"wrongPw":["كلمة المرور غير صحيحة. حاول مرة أخرى.","Incorrect password. Try again."],"unlock":["دخول لوحة المشرف ←","Unlock admin →"],"demoPw":["كلمة المرور التجريبية: ","Demo password: "],"adminKicker":["المشرف · إضافة الموردين","Admin · vendor intake"],"adminTitle":["إضافة مورد.","Add a vendor."],"adminSub":["أنشئ موردًا جديدًا وانشر منتجاته — أو أضف منتجات لمورد موجود بالفعل. هذه الصفحة لك وحدك، وكل ما تنشره يظهر فورًا للجميع.","Create a new vendor and publish what they sell — or add products to an existing vendor. Only you can reach this page; everything goes live immediately."],"connected":["متصل بـ Supabase — المنتجات الجديدة تظهر لكل الزوار.","Connected to Supabase — new listings publish to every visitor."],"notConnected":["Supabase غير متصل — المنتجات تُحفظ في متصفحك فقط.","Supabase not connected — listings only save to your browser."],"sec1":["٠١ — المورد","01 — Vendor"],"existing":["مورد موجود","Existing vendor"],"newV":["مورد جديد","New vendor"],"chooseV":["اختر المورد","Choose vendor"],"companyName":["اسم الشركة","Company name"],"contactName":["اسم المسؤول","Contact name"],"phoneLabel":["رقم الهاتف (يظهر في نافذة التواصل)","Phone (shown in contact popup)"],"originLabel":["الدولة / المنشأ","Country / origin"],"sec2":["٠٢ — المنتجات","02 — Products"],"sec2Sub":["أضف كل المنتجات التي يبيعها هذا المورد — استخدم «إضافة منتج آخر» لكل منتج إضافي.","Add every product this vendor sells — use “Add another product” for each extra one."],"remove":["حذف","Remove"],"productName":["اسم المنتج","Product name"],"category":["الفئة","Category"],"priceAmount":["المبلغ","Amount"],"priceCurrency":["العملة","Currency"],"pricePerAmount":["لكل كمية","Per amount"],"pricePerUnit":["الوحدة","Unit"],"priceNote":["ملاحظة السعر (اختياري)","Price note (optional)"],"phPriceNote":["مثال: + مصاريف الشحن","e.g. + shipping"],"photoLink":["رابط الصورة (اختياري)","Photo link (optional)"],"driveNote":["روابط Google Drive تعمل إذا كان الملف مشاركًا مع «أي شخص لديه الرابط».","Google Drive links work if the file is shared as “Anyone with the link”."],"addRow":["+ إضافة منتج آخر","+ Add another product"],"published":["✓ تم النشر — ظاهر الآن في صفحة المورد.","✓ Published — live on the vendor page."],"jsonTitle":["منتجاتك — JSON","Your listings — JSON"],"clearAll":["حذف الكل","Clear all"],"jsonSub":["كل المنتجات المنشورة في قاعدة البيانات، بصيغة JSON للنسخ الاحتياطي.","Every listing in the database, as JSON for backup."],"footer":["algae.market — دليل للموردين، وليس متجرًا","algae.market — a vendor directory, not a store"],"adminLink":["المشرف","Admin"],"contactVendor":["تواصل مع المورد","Contact vendor"],"vendorName":["اسم المورد","Vendor name"],"productsFrom":["منتجات","Products from"],"product":["منتج","Product"],"call":["اتصل بـ","Call"],"fwd":["←","→"],"sbError":["خطأ من Supabase:","Supabase error:"],"setup1":["للنشر لكل الزوار: افتح ملف","To publish to every visitor, open"],"setup2":["وضع قيم","and set"],"phCompany":["مثال: ايكيوبد","e.g. Verde Alga Coop."],"phContact":["مثال: أحمد محمد","e.g. Nora Alvarez"],"phOrigin":["مثال: القاهرة، مصر","e.g. Cairo, Egypt"],"phName":["مثال: بودرة سبيرولينا، درجة غذائية","e.g. Spirulina powder, food grade"],"phCat":["مثال: بودرة، مستخلص، كتلة حيوية طازجة","e.g. Powder, Extract, Fresh biomass"],"phPhoto":["https://… أو assets/photo.webp","https://… or assets/photo.webp"],"close":["إغلاق","Close"]};
     const t = {}; for (const k in T) t[k] = T[k][ar ? 0 : 1];
     const openVendor = (key) => { this.setState({ page: 'vendor', vendorKey: key }); window.scrollTo(0,0); };
     const products = this.allProducts();
@@ -546,6 +606,8 @@ class Component extends DCLogic {
       image: this.imageFor(p),
       hasImage: !!this.imageFor(p),
       noImage: !this.imageFor(p),
+      priceLine: this.formatPrice(p, ar),
+      hasPriceNote: !!(p.price_note && String(p.price_note).trim()),
       onContact: () => this.setState({ modal: p }),
       onView: () => { this.setState({ page: 'detail', detailId: p.id }); window.scrollTo(0,0); },
       onVendor: () => openVendor((p.company || 'غير معروف').trim()),
@@ -570,7 +632,7 @@ class Component extends DCLogic {
 
     const visibleProducts = visible.map(decorate);
     const detailProduct = decorate(products.find(p => p.id === detailId) || products[0] || {});
-    const detail = { ...detailProduct, longBlurb: (detailProduct.blurb || '') + (ar ? ' تواصل مع المورد مباشرة للحصول على المواصفات الكاملة والحد الأدنى للطلب ومستندات التصدير. algae.market لا يتوسط في البيع — التعامل مباشر بين المنتج والمشتري.' : ' Contact the vendor directly for full specs, minimum order quantities and export documents. algae.market does not intermediate — you deal grower-to-buyer.') };
+    const detail = { ...detailProduct };
 
     const userProductsJson = JSON.stringify(userProducts, null, 2);
 
@@ -584,7 +646,7 @@ class Component extends DCLogic {
       isVendor: page === 'vendor',
       vendorList,
       vendor,
-      vendorProducts: activeGroup.items.map(decorate),
+      vendorProducts: [...activeGroup.items].sort((a, b) => (a.price_amount == null || a.price_amount === '' ? Infinity : +a.price_amount) - (b.price_amount == null || b.price_amount === '' ? Infinity : +b.price_amount)).map(decorate),
       goVendors: () => { this.setState({ page: 'vendors', vendorKey: null }); window.scrollTo(0,0); },
       vendorsCurrent: (page === 'vendors' || page === 'vendor') ? 'page' : 'false',
       isAdmin: page === 'admin' && adminUnlocked,
@@ -667,8 +729,11 @@ class Component extends DCLogic {
         onRemove: () => this.setState(s => ({ rows: s.rows.filter((_, k) => k !== i) })),
         setName: (e) => this.setRow(i, { name: e.target.value }),
         setCategory: (e) => this.setRow(i, { category: e.target.value }),
-        setPrice: (e) => this.setRow(i, { price: e.target.value }),
-        setBlurb: (e) => this.setRow(i, { blurb: e.target.value }),
+        setPriceAmount: (e) => this.setRow(i, { price_amount: e.target.value }),
+        setPriceCurrency: (e) => this.setRow(i, { price_currency: e.target.value }),
+        setPricePerAmount: (e) => this.setRow(i, { price_per_amount: e.target.value }),
+        setPricePerUnit: (e) => this.setRow(i, { price_per_unit: e.target.value }),
+        setPriceNote: (e) => this.setRow(i, { price_note: e.target.value }),
         setImage: (e) => this.setRow(i, { image: e.target.value }),
       })),
       categoryOptions: [...new Set([...products.map(p => p.category).filter(Boolean), 'بودرة', 'مستخلص', 'كتلة حيوية طازجة', 'أقراص وكبسولات', 'سائل'])],
@@ -696,13 +761,19 @@ class Component extends DCLogic {
             this.setState({ formError: (ar ? 'املأ بيانات المورد الأربعة كاملة.' : 'Fill in all four vendor fields.') }); return;
           }
         }
-        const rows = this.state.rows.filter(r => r.name.trim() && r.price.trim());
+        const rows = this.state.rows.filter(r => r.name.trim() && String(r.price_amount).trim());
         if (!rows.length) { this.setState({ formError: (ar ? 'أضف منتجًا واحدًا على الأقل باسم وسعر.' : 'Add at least one product with a name and a price.') }); return; }
 
         const tones = ['var(--color-accent-2-500)','var(--color-accent-500)','var(--color-accent-2-600)','var(--color-accent-400)'];
         const recs = rows.map((r, i) => ({
           id: 'u' + Date.now() + '-' + i,
-          name: r.name.trim(), category: (r.category || '').trim(), price: r.price.trim(), blurb: r.blurb.trim(),
+          name: r.name.trim(),
+          category: (r.category || '').trim(),
+          price_amount: parseFloat(r.price_amount) || null,
+          price_currency: r.price_currency || 'EGP',
+          price_per_amount: r.price_per_amount ? parseFloat(r.price_per_amount) : null,
+          price_per_unit: r.price_per_unit || null,
+          price_note: (r.price_note || '').trim() || null,
           image: this.normalizeImage(r.image),
           vendor: v.vendor, company: v.company, phone: v.phone, origin: v.origin,
           tone: tones[i % tones.length],
