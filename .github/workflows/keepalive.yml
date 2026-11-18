@@ -1,29 +1,19 @@
 name: Supabase keepalive
 
 on:
+  schedule:
+    - cron: '0 12 */3 * *'   # every 3 days at 12:00 UTC
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Diagnose
+      - name: Ping Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          echo "URL length: $(printf '%s' "$SUPABASE_URL" | wc -c)"
-          echo "KEY length: $(printf '%s' "$SUPABASE_KEY" | wc -c)"
-          echo "URL head: $(printf '%s' "$SUPABASE_URL" | head -c 8)"
-          echo "KEY head: $(printf '%s' "$SUPABASE_KEY" | head -c 20)"
-          echo "KEY tail: $(printf '%s' "$SUPABASE_KEY" | tail -c 10)"
-          echo "---"
-          echo "Try 1: apikey only"
-          curl -s -o /tmp/r1.txt -w "HTTP %{http_code}\n" \
-            "$SUPABASE_URL/rest/v1/" -H "apikey: $SUPABASE_KEY"
-          echo "Body: $(head -c 300 /tmp/r1.txt)"
-          echo "---"
-          echo "Try 2: Bearer only"
-          curl -s -o /tmp/r2.txt -w "HTTP %{http_code}\n" \
-            "$SUPABASE_URL/rest/v1/" -H "Authorization: Bearer $SUPABASE_KEY"
-          echo "Body: $(head -c 300 /tmp/r2.txt)"
+          curl -sSf "$SUPABASE_URL/rest/v1/products?select=*&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -o /dev/null -w "HTTP %{http_code}\n"
